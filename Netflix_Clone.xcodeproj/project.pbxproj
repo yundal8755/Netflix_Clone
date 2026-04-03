@@ -6,6 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		04646E2A2F7DEBE6001609E5 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E292F7DEBE6001609E5 /* SnapKit */; };
+		04646E2F2F7DEBFF001609E5 /* NSObject-Rx in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E2E2F7DEBFF001609E5 /* NSObject-Rx */; };
+		04646E332F7DEC2D001609E5 /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E322F7DEC2D001609E5 /* RxCocoa */; };
+		04646E352F7DEC39001609E5 /* RxRelay in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E342F7DEC39001609E5 /* RxRelay */; };
+		04646E372F7DEC39001609E5 /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E362F7DEC39001609E5 /* RxSwift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		0441B3B42F7D6147001B0FAB /* Netflix_Clone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Netflix_Clone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -14,7 +22,9 @@
 		0441B3C62F7D6148001B0FAB /* Exceptions for "Netflix_Clone" folder in "Netflix_Clone" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				App/Info.plist,
+				Presentation/Base/.gitkeep,
+				Presentation/Common/.gitkeep,
 			);
 			target = 0441B3B32F7D6147001B0FAB /* Netflix_Clone */;
 		};
@@ -36,6 +46,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				04646E332F7DEC2D001609E5 /* RxCocoa in Frameworks */,
+				04646E2F2F7DEBFF001609E5 /* NSObject-Rx in Frameworks */,
+				04646E372F7DEC39001609E5 /* RxSwift in Frameworks */,
+				04646E352F7DEC39001609E5 /* RxRelay in Frameworks */,
+				04646E2A2F7DEBE6001609E5 /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -46,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				0441B3B62F7D6147001B0FAB /* Netflix_Clone */,
+				04646E312F7DEC2D001609E5 /* Frameworks */,
 				0441B3B52F7D6147001B0FAB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -56,6 +72,13 @@
 				0441B3B42F7D6147001B0FAB /* Netflix_Clone.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		04646E312F7DEC2D001609E5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -78,6 +101,11 @@
 			);
 			name = Netflix_Clone;
 			packageProductDependencies = (
+				04646E292F7DEBE6001609E5 /* SnapKit */,
+				04646E2E2F7DEBFF001609E5 /* NSObject-Rx */,
+				04646E322F7DEC2D001609E5 /* RxCocoa */,
+				04646E342F7DEC39001609E5 /* RxRelay */,
+				04646E362F7DEC39001609E5 /* RxSwift */,
 			);
 			productName = Netflix_Clone;
 			productReference = 0441B3B42F7D6147001B0FAB /* Netflix_Clone.app */;
@@ -107,6 +135,11 @@
 			);
 			mainGroup = 0441B3AB2F7D6147001B0FAB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				04646E282F7DEBE6001609E5 /* XCRemoteSwiftPackageReference "SnapKit" */,
+				04646E2D2F7DEBFF001609E5 /* XCRemoteSwiftPackageReference "NSObject-Rx" */,
+				04646E302F7DEC15001609E5 /* XCRemoteSwiftPackageReference "RxSwift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0441B3B52F7D6147001B0FAB /* Products */;
 			projectDirPath = "";
@@ -147,12 +180,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YRPYBFPPCT;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Netflix_Clone/Info.plist;
+				INFOPLIST_FILE = Netflix_Clone/App/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -161,12 +194,16 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.Netflix-Clone";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -179,12 +216,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YRPYBFPPCT;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Netflix_Clone/Info.plist;
+				INFOPLIST_FILE = Netflix_Clone/App/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -193,12 +230,16 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.Netflix-Clone";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -345,6 +386,61 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		04646E282F7DEBE6001609E5 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
+		04646E2D2F7DEBFF001609E5 /* XCRemoteSwiftPackageReference "NSObject-Rx" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RxSwiftCommunity/NSObject-Rx.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.2.2;
+			};
+		};
+		04646E302F7DEC15001609E5 /* XCRemoteSwiftPackageReference "RxSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ReactiveX/RxSwift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.10.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		04646E292F7DEBE6001609E5 /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04646E282F7DEBE6001609E5 /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		04646E2E2F7DEBFF001609E5 /* NSObject-Rx */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04646E2D2F7DEBFF001609E5 /* XCRemoteSwiftPackageReference "NSObject-Rx" */;
+			productName = "NSObject-Rx";
+		};
+		04646E322F7DEC2D001609E5 /* RxCocoa */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04646E302F7DEC15001609E5 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxCocoa;
+		};
+		04646E342F7DEC39001609E5 /* RxRelay */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04646E302F7DEC15001609E5 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxRelay;
+		};
+		04646E362F7DEC39001609E5 /* RxSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04646E302F7DEC15001609E5 /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0441B3AC2F7D6147001B0FAB /* Project object */;
 }
