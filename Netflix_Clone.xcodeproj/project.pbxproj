@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04646E382F7EF000001609E5 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E392F7EF000001609E5 /* Alamofire */; };
 		04646E2A2F7DEBE6001609E5 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E292F7DEBE6001609E5 /* SnapKit */; };
 		04646E2F2F7DEBFF001609E5 /* NSObject-Rx in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E2E2F7DEBFF001609E5 /* NSObject-Rx */; };
 		04646E332F7DEC2D001609E5 /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E322F7DEC2D001609E5 /* RxCocoa */; };
 		04646E352F7DEC39001609E5 /* RxRelay in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E342F7DEC39001609E5 /* RxRelay */; };
 		04646E372F7DEC39001609E5 /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E362F7DEC39001609E5 /* RxSwift */; };
+		04646E3A2F7EF000001609E5 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E3B2F7EF000001609E5 /* RealmSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,8 +48,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				04646E382F7EF000001609E5 /* Alamofire in Frameworks */,
 				04646E332F7DEC2D001609E5 /* RxCocoa in Frameworks */,
 				04646E2F2F7DEBFF001609E5 /* NSObject-Rx in Frameworks */,
+				04646E3A2F7EF000001609E5 /* RealmSwift in Frameworks */,
 				04646E372F7DEC39001609E5 /* RxSwift in Frameworks */,
 				04646E352F7DEC39001609E5 /* RxRelay in Frameworks */,
 				04646E2A2F7DEBE6001609E5 /* SnapKit in Frameworks */,
@@ -101,8 +105,10 @@
 			);
 			name = Netflix_Clone;
 			packageProductDependencies = (
+				04646E392F7EF000001609E5 /* Alamofire */,
 				04646E292F7DEBE6001609E5 /* SnapKit */,
 				04646E2E2F7DEBFF001609E5 /* NSObject-Rx */,
+				04646E3B2F7EF000001609E5 /* RealmSwift */,
 				04646E322F7DEC2D001609E5 /* RxCocoa */,
 				04646E342F7DEC39001609E5 /* RxRelay */,
 				04646E362F7DEC39001609E5 /* RxSwift */,
@@ -136,8 +142,10 @@
 			mainGroup = 0441B3AB2F7D6147001B0FAB;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				04646E3C2F7EF000001609E5 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				04646E282F7DEBE6001609E5 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				04646E2D2F7DEBFF001609E5 /* XCRemoteSwiftPackageReference "NSObject-Rx" */,
+				04646E3D2F7EF000001609E5 /* XCRemoteSwiftPackageReference "realm-swift" */,
 				04646E302F7DEC15001609E5 /* XCRemoteSwiftPackageReference "RxSwift" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -388,6 +396,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		04646E3C2F7EF000001609E5 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
 		04646E282F7DEBE6001609E5 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
@@ -412,9 +428,22 @@
 				minimumVersion = 6.10.2;
 			};
 		};
+		04646E3D2F7EF000001609E5 /* XCRemoteSwiftPackageReference "realm-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/realm/realm-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		04646E392F7EF000001609E5 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04646E3C2F7EF000001609E5 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
 		04646E292F7DEBE6001609E5 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 04646E282F7DEBE6001609E5 /* XCRemoteSwiftPackageReference "SnapKit" */;
@@ -439,6 +468,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 04646E302F7DEC15001609E5 /* XCRemoteSwiftPackageReference "RxSwift" */;
 			productName = RxSwift;
+		};
+		04646E3B2F7EF000001609E5 /* RealmSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04646E3D2F7EF000001609E5 /* XCRemoteSwiftPackageReference "realm-swift" */;
+			productName = RealmSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
