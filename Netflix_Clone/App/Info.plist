@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-	<key>UIApplicationSceneManifest</key>
 	<dict>
+		<key>UIStatusBarHidden</key>
+		<false/>
+		<key>UIStatusBarStyle</key>
+		<string>UIStatusBarStyleLightContent</string>
+		<key>UIViewControllerBasedStatusBarAppearance</key>
+		<true/>
+		<key>UIApplicationSceneManifest</key>
+		<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<false/>
 		<key>UISceneConfigurations</key>
@@ -20,6 +26,6 @@
 		</dict>
 	</dict>
 	<key>TMDBAPIKey</key>
-	<string>ff4ef3a618f30b15a03208a7c98f127a</string>
+	<string>$(TMDB_API_KEY)</string>
 </dict>
 </plist>

@@ -10,23 +10,23 @@ import SnapKit
 
 final class HomeView: BaseView {
     let topBarView = TopBarView()
-    let sectionsTableView = UITableView(frame: .zero, style: .plain)
     private let topBarContainerView = UIView()
     
+    let homeTableView = HomeTableView()
     
-    // MARK: - Methods
     
-    // VIEW
+    // MARK: - configurationSetView
     override func configurationSetView() {
-        // 상단 바
         addSubview(topBarContainerView)
         topBarContainerView.addSubview(topBarView)
         
         // 콘텐츠 body
-        addSubview(sectionsTableView)
+        addSubview(homeTableView)
     }
     
-    // LAYOUT
+    
+    
+    // MARK: - configurationLayout
     override func configurationLayout() {
         topBarContainerView.snp.makeConstraints { make in
             make.top.equalTo(safeAreaLayoutGuide)
@@ -40,25 +40,20 @@ final class HomeView: BaseView {
             make.bottom.equalToSuperview().inset(8)
         }
 
-        sectionsTableView.snp.makeConstraints { make in
+        homeTableView.snp.makeConstraints { make in
             make.top.equalTo(topBarContainerView.snp.bottom)
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalTo(safeAreaLayoutGuide)
         }
     }
     
-    // UI
+    
+    
+    // MARK: - configurationUI
     override func configurationUI() {
         backgroundColor = .black
 
         topBarContainerView.backgroundColor = .clear
-
-        sectionsTableView.backgroundColor = .clear
-        sectionsTableView.separatorStyle = .none
-        sectionsTableView.showsVerticalScrollIndicator = false
-        sectionsTableView.rowHeight = UITableView.automaticDimension
-        sectionsTableView.estimatedRowHeight = 210
-        sectionsTableView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 20, right: 0)
     }
 }
 

@@ -9,7 +9,14 @@ import UIKit
 import SnapKit
 
 final class TopBarView: BaseView {
-    private let menuButton: UIButton = {
+
+    private enum Metric {
+        static let profileButtonSize: CGFloat = 28
+    }
+
+    private let profileRepository: ProfileRepositoryType = ProfileRepository()
+    
+    let menuButton: UIButton = {
         var config = UIButton.Configuration.plain()
         config.preferredSymbolConfigurationForImage = .init(pointSize: 16, weight: .regular)
         config.image = UIImage(systemName: "line.3.horizontal")
@@ -30,12 +37,10 @@ final class TopBarView: BaseView {
     }()
 
     let profileButton: UIButton = {
-        var config = UIButton.Configuration.plain()
-        config.preferredSymbolConfigurationForImage = .init(pointSize: 24, weight: .regular)
-        config.image = UIImage(systemName: "person.crop.circle.fill")
-        config.baseForegroundColor = .white
-
-        let button = UIButton(configuration: config)
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "person.crop.circle.fill"), for: .normal)
+        button.tintColor = .white
+        button.contentMode = .scaleAspectFill
         button.accessibilityIdentifier = "home.profile.button"
         return button
     }()
@@ -62,7 +67,7 @@ final class TopBarView: BaseView {
         profileButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview()
             make.centerY.equalToSuperview()
-            make.size.equalTo(28)
+            make.size.equalTo(Metric.profileButtonSize)
             make.top.greaterThanOrEqualToSuperview()
             make.bottom.lessThanOrEqualToSuperview()
         }
@@ -70,6 +75,77 @@ final class TopBarView: BaseView {
 
     override func configurationUI() {
         backgroundColor = .clear
+        profileButton.layer.cornerRadius = Metric.profileButtonSize / 2
+        profileButton.clipsToBounds = true
+        profileButton.imageView?.contentMode = .scaleAspectFill
+
+        bindProfileImageUpdates()
+        loadProfileImageFromLocalDB()
+    }
+}
+
+private extension TopBarView {
+    func bindProfileImageUpdates() {
+        NotificationCenter.default.addObserver(
+            forName: .profileDidUpdate,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self else { return }
+
+            if let profileImageName = notification.userInfo?[ProfileNotificationUserInfoKey.profileImageName] as? String {
+                self.updateProfileImage(named: profileImageName)
+                return
+            }
+
+            self.loadProfileImageFromLocalDB()
+        }
+    }
+
+    func loadProfileImageFromLocalDB() {
+        Task { [weak self] in
+            guard let self else { return }
+
+            do {
+                let profile = try await self.profileRepository.fetchProfile()
+                await MainActor.run {
+                    self.updateProfileImage(named: profile.profileImageName)
+                }
+            } catch {
+                await MainActor.run {
+                    self.applyDefaultProfileImage()
+                }
+            }
+        }
+    }
+
+    func updateProfileImage(named profileImageName: String) {
+        guard let image = image(from: profileImageName) else {
+            applyDefaultProfileImage()
+            return
+        }
+
+        profileButton.setImage(image.withRenderingMode(.alwaysOriginal), for: .normal)
+    }
+
+    func applyDefaultProfileImage() {
+        profileButton.setImage(UIImage(systemName: "person.crop.circle.fill"), for: .normal)
+        profileButton.tintColor = .white
+    }
+
+    func image(from profileImageName: String) -> UIImage? {
+        guard profileImageName.isEmpty == false else { return nil }
+
+        if profileImageName.hasPrefix("/") {
+            return UIImage(contentsOfFile: profileImageName)
+        }
+
+        if profileImageName.hasPrefix("file://"),
+           let url = URL(string: profileImageName) {
+            return UIImage(contentsOfFile: url.path)
+        }
+
+        return UIImage(named: profileImageName)
     }
 }
 

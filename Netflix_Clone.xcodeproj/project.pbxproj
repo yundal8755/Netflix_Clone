@@ -7,17 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		04646E382F7EF000001609E5 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E392F7EF000001609E5 /* Alamofire */; };
 		04646E2A2F7DEBE6001609E5 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E292F7DEBE6001609E5 /* SnapKit */; };
 		04646E2F2F7DEBFF001609E5 /* NSObject-Rx in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E2E2F7DEBFF001609E5 /* NSObject-Rx */; };
 		04646E332F7DEC2D001609E5 /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E322F7DEC2D001609E5 /* RxCocoa */; };
 		04646E352F7DEC39001609E5 /* RxRelay in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E342F7DEC39001609E5 /* RxRelay */; };
 		04646E372F7DEC39001609E5 /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E362F7DEC39001609E5 /* RxSwift */; };
+		04646E382F7EF000001609E5 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E392F7EF000001609E5 /* Alamofire */; };
 		04646E3A2F7EF000001609E5 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E3B2F7EF000001609E5 /* RealmSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0441B3B42F7D6147001B0FAB /* Netflix_Clone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Netflix_Clone.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1B2C3D52F900001001B0FAB /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Base.xcconfig; path = Netflix_Clone/Configs/Base.xcconfig; sourceTree = "<group>"; };
+		A1B2C3D62F900001001B0FAB /* Dev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Dev.xcconfig; path = Netflix_Clone/Configs/Dev.xcconfig; sourceTree = "<group>"; };
+		A1B2C3D82F900001001B0FAB /* Prod.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Prod.xcconfig; path = Netflix_Clone/Configs/Prod.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -65,6 +68,7 @@
 			isa = PBXGroup;
 			children = (
 				0441B3B62F7D6147001B0FAB /* Netflix_Clone */,
+				A1B2C3D72F900001001B0FAB /* Configs */,
 				04646E312F7DEC2D001609E5 /* Frameworks */,
 				0441B3B52F7D6147001B0FAB /* Products */,
 			);
@@ -83,6 +87,16 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A1B2C3D72F900001001B0FAB /* Configs */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D52F900001001B0FAB /* Base.xcconfig */,
+				A1B2C3D62F900001001B0FAB /* Dev.xcconfig */,
+				A1B2C3D82F900001001B0FAB /* Prod.xcconfig */,
+			);
+			name = Configs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -181,6 +195,7 @@
 /* Begin XCBuildConfiguration section */
 		0441B3C82F7D6148001B0FAB /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1B2C3D62F900001001B0FAB /* Dev.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -217,6 +232,7 @@
 		};
 		0441B3C92F7D6148001B0FAB /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1B2C3D82F900001001B0FAB /* Prod.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -396,14 +412,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		04646E3C2F7EF000001609E5 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.0.0;
-			};
-		};
 		04646E282F7DEBE6001609E5 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
@@ -428,6 +436,14 @@
 				minimumVersion = 6.10.2;
 			};
 		};
+		04646E3C2F7EF000001609E5 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
 		04646E3D2F7EF000001609E5 /* XCRemoteSwiftPackageReference "realm-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/realm/realm-swift.git";
@@ -439,11 +455,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		04646E392F7EF000001609E5 /* Alamofire */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 04646E3C2F7EF000001609E5 /* XCRemoteSwiftPackageReference "Alamofire" */;
-			productName = Alamofire;
-		};
 		04646E292F7DEBE6001609E5 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 04646E282F7DEBE6001609E5 /* XCRemoteSwiftPackageReference "SnapKit" */;
@@ -468,6 +479,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 04646E302F7DEC15001609E5 /* XCRemoteSwiftPackageReference "RxSwift" */;
 			productName = RxSwift;
+		};
+		04646E392F7EF000001609E5 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04646E3C2F7EF000001609E5 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
 		};
 		04646E3B2F7EF000001609E5 /* RealmSwift */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -7,7 +7,14 @@
 
 import Foundation
 import RealmSwift
-import RxSwift
+
+extension Notification.Name {
+    static let profileDidUpdate = Notification.Name("profileDidUpdate")
+}
+
+enum ProfileNotificationUserInfoKey {
+    static let profileImageName = "profileImageName"
+}
 
 struct ProfileEntity {
     let nickname: String
@@ -23,40 +30,35 @@ struct ProfileEntity {
     }
 }
 
-protocol ProfileRepositoryType {
-    func fetchProfile() -> Single<ProfileEntity>
+protocol ProfileRepositoryType: Sendable {
+    func fetchProfile() async throws -> ProfileEntity
     func saveProfile(
         nickname: String,
         profileImageName: String,
         statusMessage: String
-    ) -> Single<ProfileEntity>
+    ) async throws -> ProfileEntity
 }
 
-final class ProfileRepository: ProfileRepositoryType {
+actor ProfileRepository: ProfileRepositoryType {
     private let configuration: Realm.Configuration
 
     init(configuration: Realm.Configuration = .defaultConfiguration) {
         self.configuration = configuration
     }
 
-    func fetchProfile() -> Single<ProfileEntity> {
-        Single.create { [configuration] single in
-            do {
-                let realm = try Realm(configuration: configuration)
-                let profile = realm.object(ofType: Profile.self, forPrimaryKey: Profile.defaultIdentifier)
+    func fetchProfile() async throws -> ProfileEntity {
+        try await MainActor.run {
+            let realm = try Realm(configuration: configuration)
+            let profile = realm.object(
+                ofType: Profile.self,
+                forPrimaryKey: Profile.defaultIdentifier
+            )
 
-                let entity = ProfileEntity(
-                    nickname: profile?.nickname ?? "",
-                    profileImageName: profile?.profileImageName ?? "",
-                    statusMessage: profile?.statusMessage ?? ""
-                )
-
-                single(.success(entity))
-            } catch {
-                single(.failure(error))
-            }
-
-            return Disposables.create()
+            return ProfileEntity(
+                nickname: profile?.nickname ?? "",
+                profileImageName: profile?.profileImageName ?? "",
+                statusMessage: profile?.statusMessage ?? ""
+            )
         }
     }
 
@@ -64,32 +66,39 @@ final class ProfileRepository: ProfileRepositoryType {
         nickname: String,
         profileImageName: String,
         statusMessage: String
-    ) -> Single<ProfileEntity> {
-        Single.create { [configuration] single in
-            do {
-                let realm = try Realm(configuration: configuration)
-                let profile = Profile(
-                    nickname: nickname,
-                    profileImageName: profileImageName,
-                    statusMessage: statusMessage
+    ) async throws -> ProfileEntity {
+        try await MainActor.run {
+            let realm = try Realm(configuration: configuration)
+            let updatedAt = Date()
+
+            try realm.write {
+                realm.create(
+                    Profile.self,
+                    value: [
+                        "id": Profile.defaultIdentifier,
+                        "nickname": nickname,
+                        "profileImageName": profileImageName,
+                        "statusMessage": statusMessage,
+                        "updatedAt": updatedAt
+                    ],
+                    update: .modified
                 )
-
-                try realm.write {
-                    realm.add(profile, update: .modified)
-                }
-
-                single(.success(
-                    ProfileEntity(
-                        nickname: profile.nickname,
-                        profileImageName: profile.profileImageName,
-                        statusMessage: profile.statusMessage
-                    )
-                ))
-            } catch {
-                single(.failure(error))
             }
 
-            return Disposables.create()
+            let entity = ProfileEntity(
+                nickname: nickname,
+                profileImageName: profileImageName,
+                statusMessage: statusMessage
+            )
+
+            NotificationCenter.default.post(
+                name: .profileDidUpdate,
+                object: nil,
+                userInfo: [ProfileNotificationUserInfoKey.profileImageName: profileImageName]
+            )
+
+            return entity
         }
     }
+
 }

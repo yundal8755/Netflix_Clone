@@ -11,12 +11,36 @@ import RxSwift
 
 enum NetworkError: LocalizedError {
     case missingAPIKey
+    case invalidRequestParameters
 
     var errorDescription: String? {
         switch self {
         case .missingAPIKey:
-            return "Info.plist에 `TMDBAPIKey`를 설정해 주세요."
+            return "`Netflix_Clone/Configs/Base.xcconfig`의 `TMDB_API_KEY`를 설정해 주세요."
+        case .invalidRequestParameters:
+            return "요청 파라미터 인코딩에 실패했습니다."
         }
+    }
+}
+
+protocol JSONDecoderManagerType {
+    func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T
+}
+
+final class JSONDecoderManager: JSONDecoderManagerType {
+    static let shared = JSONDecoderManager()
+
+    private let decoder: JSONDecoder
+    private let lock = NSLock()
+
+    private init(decoder: JSONDecoder = JSONDecoder()) {
+        self.decoder = decoder
+    }
+
+    func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return try decoder.decode(type, from: data)
     }
 }
 
@@ -30,13 +54,16 @@ protocol NetworkManagerType {
 final class NetworkManager: NetworkManagerType {
     private let session: Session
     private let bundle: Bundle
+    private let decoderManager: JSONDecoderManagerType
 
     init(
         session: Session = .default,
-        bundle: Bundle = .main
+        bundle: Bundle = .main,
+        decoderManager: JSONDecoderManagerType = JSONDecoderManager.shared
     ) {
         self.session = session
         self.bundle = bundle
+        self.decoderManager = decoderManager
     }
 
     func fetchPopularMovies() -> Single<[TMDBMovieDTO]> {
@@ -56,23 +83,29 @@ final class NetworkManager: NetworkManagerType {
     }
 
     private func requestMovies(endpoint: TMDBEndpoint) -> Single<[TMDBMovieDTO]> {
-        guard let apiKey = bundle.object(forInfoDictionaryKey: "TMDBAPIKey") as? String,
-              apiKey.isEmpty == false else {
+        guard let apiKey = tmdbAPIKey else {
             return .error(NetworkError.missingAPIKey)
         }
 
-        return Single.create { [session] single in
+        let parameters: Parameters
+        do {
+            parameters = try endpoint.requestDTO(apiKey: apiKey).asParameters()
+        } catch {
+            return .error(NetworkError.invalidRequestParameters)
+        }
+
+        return Single.create { [session, decoderManager] single in
             let request = session.request(
                 endpoint.urlString,
                 method: .get,
-                parameters: endpoint.parameters(apiKey: apiKey)
+                parameters: parameters
             )
             .validate(statusCode: 200 ..< 300)
-            .responseData(queue: .global(qos: .userInitiated)) { response in
+            .responseData(queue: .main) { response in
                 switch response.result {
                 case .success(let data):
                     do {
-                        let decodedResponse = try JSONDecoder().decode(
+                        let decodedResponse = try decoderManager.decode(
                             TMDBMovieListResponseDTO.self,
                             from: data
                         )
@@ -89,5 +122,16 @@ final class NetworkManager: NetworkManagerType {
                 request.cancel()
             }
         }
+    }
+
+    private var tmdbAPIKey: String? {
+        guard let key = bundle.object(forInfoDictionaryKey: "TMDBAPIKey") as? String else {
+            return nil
+        }
+
+        let trimmedKey = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedKey.isEmpty == false else { return nil }
+        guard trimmedKey.contains("$(") == false else { return nil }
+        return trimmedKey
     }
 }
