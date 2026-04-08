@@ -19,6 +19,10 @@ final class PosterCollectionViewCell: UICollectionViewCell {
         static let titleBackgroundHeight: CGFloat = 44
         /// 타이틀 텍스트 내부 여백
         static let titleInset: CGFloat = 8
+        /// 하트 버튼 크기
+        static let heartButtonSize: CGFloat = 28
+        /// 하트 버튼 여백
+        static let heartInset: CGFloat = 6
     }
 
     // 재사용 가능한 고정 리소스
@@ -39,12 +43,20 @@ final class PosterCollectionViewCell: UICollectionViewCell {
     private let titleBackgroundView = UIView()
     /// 영화 제목 라벨
     private let titleLabel = UILabel()
+    /// 좋아요 버튼
+    private let heartButton = UIButton(type: .system)
 
     /// 현재 진행 중인 이미지 요청 (재사용 시 취소하기 위해 참조 유지)
     private var imageRequest: DataRequest?
     /// 셀이 "지금 보여줘야 하는 URL"을 추적하기 위한 값
     /// 비동기 응답이 늦게 도착했을 때, 잘못된 셀에 이미지가 꽂히는 문제를 방지합니다.
     private var currentPosterURL: URL?
+    /// 현재 좋아요 상태
+    private var isLiked = false
+
+    /// 하트 버튼 탭 이벤트 콜백
+    /// - 반환값: 토글 후 최종 좋아요 상태
+    var onTapHeartButton: (() -> Bool)?
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -59,9 +71,12 @@ final class PosterCollectionViewCell: UICollectionViewCell {
         imageRequest = nil
         // 현재 URL 추적값 초기화
         currentPosterURL = nil
+        isLiked = false
+        onTapHeartButton = nil
         // UI를 기본 상태로 리셋
         posterImageView.image = Constant.placeholderImage
         titleLabel.text = nil
+        applyHeartStyle(isLiked: false)
     }
     
     /// 코드 기반 생성자
@@ -81,6 +96,7 @@ final class PosterCollectionViewCell: UICollectionViewCell {
         posterBackgroundView.addSubview(posterImageView)
         posterBackgroundView.addSubview(titleBackgroundView)
         posterBackgroundView.addSubview(titleLabel)
+        posterBackgroundView.addSubview(heartButton)
     }
 
     /// 오토레이아웃 제약 설정
@@ -104,6 +120,11 @@ final class PosterCollectionViewCell: UICollectionViewCell {
             make.leading.trailing.equalToSuperview().inset(Metric.titleInset)
             make.bottom.equalToSuperview().inset(Metric.titleInset)
         }
+
+        heartButton.snp.makeConstraints { make in
+            make.top.trailing.equalToSuperview().inset(Metric.heartInset)
+            make.size.equalTo(Metric.heartButtonSize)
+        }
     }
 
     /// 색상/폰트/접근성 등 스타일 구성
@@ -124,6 +145,13 @@ final class PosterCollectionViewCell: UICollectionViewCell {
         titleLabel.numberOfLines = 2
         titleLabel.font = .systemFont(ofSize: 12, weight: .semibold)
         titleLabel.textColor = .white
+
+        heartButton.backgroundColor = UIColor(white: 0, alpha: 0.35)
+        heartButton.layer.cornerCurve = .continuous
+        heartButton.layer.cornerRadius = Metric.heartButtonSize / 2
+        heartButton.tintColor = .white
+        heartButton.addTarget(self, action: #selector(didTapHeartButton), for: .touchUpInside)
+        heartButton.accessibilityIdentifier = "home.poster.heart.button"
         
         isAccessibilityElement = true
         accessibilityTraits = .button
@@ -136,9 +164,16 @@ final class PosterCollectionViewCell: UICollectionViewCell {
 extension PosterCollectionViewCell {
     /// 셀 외부에서 데이터를 주입하는 진입점
     /// 텍스트를 먼저 반영하고, 이미지는 비동기로 로딩합니다.
-    func configure(with item: PosterItem) {
+    func configure(
+        with item: PosterItem,
+        isLiked: Bool = false,
+        showsHeartButton: Bool = true
+    ) {
         titleLabel.text = item.title
         accessibilityLabel = item.title
+        self.isLiked = isLiked
+        heartButton.isHidden = showsHeartButton == false
+        applyHeartStyle(isLiked: isLiked)
         loadPosterImage(from: item.posterURL)
     }
 
@@ -199,5 +234,27 @@ extension PosterCollectionViewCell {
                     self.posterImageView.image = Constant.placeholderImage
                 }
             }
+    }
+
+    func applyHeartStyle(isLiked: Bool) {
+        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)
+        let symbolName = isLiked ? "heart.fill" : "heart"
+        heartButton.setImage(
+            UIImage(systemName: symbolName, withConfiguration: symbolConfig),
+            for: .normal
+        )
+        heartButton.tintColor = isLiked
+            ? UIColor(red: 229 / 255, green: 9 / 255, blue: 20 / 255, alpha: 1)
+            : .white
+    }
+
+    func updateLikedState(_ isLiked: Bool) {
+        self.isLiked = isLiked
+        applyHeartStyle(isLiked: isLiked)
+    }
+
+    @objc func didTapHeartButton() {
+        let nextState = onTapHeartButton?() ?? (isLiked == false)
+        updateLikedState(nextState)
     }
 }

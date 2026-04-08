@@ -22,7 +22,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         // 3. Coordinator 시작 (루트 구성은 AppCoordinator가 담당)
         let appCoordinator = AppCoordinator(window: window)
+        
         appCoordinator.start()
+        
         self.appCoordinator = appCoordinator
 
         // 4. 창을 메모리에 유지

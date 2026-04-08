@@ -5,27 +5,22 @@
 //  Created by mac on 4/2/26.
 //
 
-import UIKit
 import SnapKit
+import UIKit
 
 final class HomeView: BaseView {
     let topBarView = TopBarView()
     private let topBarContainerView = UIView()
-    
     let homeTableView = HomeTableView()
-    
-    
+
     // MARK: - configurationSetView
     override func configurationSetView() {
         addSubview(topBarContainerView)
         topBarContainerView.addSubview(topBarView)
-        
-        // 콘텐츠 body
+
         addSubview(homeTableView)
     }
-    
-    
-    
+
     // MARK: - configurationLayout
     override func configurationLayout() {
         topBarContainerView.snp.makeConstraints { make in
@@ -43,23 +38,22 @@ final class HomeView: BaseView {
         homeTableView.snp.makeConstraints { make in
             make.top.equalTo(topBarContainerView.snp.bottom)
             make.horizontalEdges.equalToSuperview()
-            make.bottom.equalTo(safeAreaLayoutGuide)
+            make.bottom.equalToSuperview()
         }
     }
-    
-    
-    
+
     // MARK: - configurationUI
     override func configurationUI() {
         backgroundColor = .black
 
         topBarContainerView.backgroundColor = .clear
+        homeTableView.backgroundColor = .clear
     }
 }
 
 #if DEBUG
-@available(iOS 17.0, *)
-#Preview {
-    HomeViewController()
-}
+    @available(iOS 17.0, *)
+    #Preview {
+        HomeViewController()
+    }
 #endif

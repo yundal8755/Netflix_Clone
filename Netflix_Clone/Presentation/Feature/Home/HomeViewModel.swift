@@ -16,7 +16,7 @@ import RxRelay // 네트워크 에러 발생시 버튼 클릭 이벤트가 UI에
 // MARK: - Action & Output
 enum HomeViewModelAction {
     case viewDidLoad
-    case profileButtonTapped
+    case searchButtonTapped
 }
 
 struct HomeViewModelOutput {
@@ -34,7 +34,7 @@ final class HomeViewModel: BaseViewModel<HomeViewModelAction, HomeViewModelOutpu
     }
 
     enum Route {
-        case profile
+        case search
     }
     
     private let sectionsRelay = BehaviorRelay<[Section]>(value: [])
@@ -59,8 +59,8 @@ final class HomeViewModel: BaseViewModel<HomeViewModelAction, HomeViewModelOutpu
         switch action {
         case .viewDidLoad:
             fetchSections()
-        case .profileButtonTapped:
-            routeRelay.accept(.profile)
+        case .searchButtonTapped:
+            routeRelay.accept(.search)
         }
     }
 }
@@ -140,6 +140,7 @@ private extension HomeViewModel {
     func mapPosterItems(from movies: [TMDBMovieDTO]) -> [PosterItem] {
         movies.prefix(10).map { movie in
             PosterItem(
+                movieID: movie.id,
                 title: movie.displayTitle,
                 posterURL: movie.posterImageURL
             )

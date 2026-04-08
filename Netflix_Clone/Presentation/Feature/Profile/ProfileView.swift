@@ -17,7 +17,7 @@ final class ProfileView: BaseView {
 
     override func configurationLayout() {
         collectionView.snp.makeConstraints { make in
-            make.edges.equalTo(safeAreaLayoutGuide)
+            make.edges.equalToSuperview()
         }
     }
 
@@ -315,31 +315,6 @@ private extension ProfileInfoCollectionViewCell {
 
     @objc func didTapSaveButton() {
         onTapSaveButton?()
-    }
-}
-
-final class ProfileCollectionSectionHeaderView: UICollectionReusableView {
-    private let titleLabel = UILabel()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        backgroundColor = .clear
-        addSubview(titleLabel)
-        titleLabel.snp.makeConstraints { make in
-//            make.horizontalEdges.equalToSuperview().inset(20)
-//            make.bottom.equalToSuperview().offset(-4)
-        }
-
-        titleLabel.textColor = .white
-        titleLabel.font = .systemFont(ofSize: 22, weight: .bold)
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    func configure(title: String) {
-        titleLabel.text = title
     }
 }
 

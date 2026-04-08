@@ -27,31 +27,11 @@ struct ProfileViewModelOutput {
 
 final class ProfileViewModel: BaseViewModel<ProfileViewModelAction, ProfileViewModelOutput> {
 
-    struct PosterContent: Hashable {
-        let id: UUID
-        let posterItem: PosterItem
-
-        init(id: UUID = UUID(), posterItem: PosterItem) {
-            self.id = id
-            self.posterItem = posterItem
-        }
-
-        static func == (lhs: PosterContent, rhs: PosterContent) -> Bool {
-            lhs.id == rhs.id
-        }
-
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(id)
-        }
-    }
-
     struct ViewState {
         let nickname: String
         let statusMessage: String
         let profileImageName: String
         let isSaving: Bool
-        let continueWatching: [PosterContent]
-        let myList: [PosterContent]
     }
 
     private struct State {
@@ -59,19 +39,9 @@ final class ProfileViewModel: BaseViewModel<ProfileViewModelAction, ProfileViewM
         var statusMessage: String = ""
         var profileImageName: String = ""
         var isSaving: Bool = false
-        var continueWatching: [PosterContent]
-        var myList: [PosterContent]
-
-        init(
-            continueWatching: [PosterContent],
-            myList: [PosterContent]
-        ) {
-            self.continueWatching = continueWatching
-            self.myList = myList
-        }
     }
 
-    private let stateRelay: BehaviorRelay<State>
+    private let stateRelay = BehaviorRelay<State>(value: State())
     private let saveCompletedRelay = PublishRelay<String>()
     private let errorMessageRelay = PublishRelay<String>()
 
@@ -80,28 +50,8 @@ final class ProfileViewModel: BaseViewModel<ProfileViewModelAction, ProfileViewM
 
     private let repository: ProfileRepositoryType
 
-    init(
-        repository: ProfileRepositoryType = ProfileRepository(),
-        continueWatchingItems: [PosterItem] = [],
-        myListItems: [PosterItem] = []
-    ) {
+    init(repository: ProfileRepositoryType = ProfileRepository()) {
         self.repository = repository
-        let fallbackContinueWatching = Self.makeContinueWatchingContents()
-        let fallbackMyList = Self.makeMyListContents()
-        let initialContinueWatching = Self.makePosterContents(
-            from: continueWatchingItems,
-            fallback: fallbackContinueWatching
-        )
-        let initialMyList = Self.makePosterContents(
-            from: myListItems,
-            fallback: fallbackMyList
-        )
-        self.stateRelay = BehaviorRelay(
-            value: State(
-                continueWatching: initialContinueWatching,
-                myList: initialMyList
-            )
-        )
 
         let output = ProfileViewModelOutput(
             viewState: stateRelay
@@ -110,9 +60,7 @@ final class ProfileViewModel: BaseViewModel<ProfileViewModelAction, ProfileViewM
                         nickname: state.nickname,
                         statusMessage: state.statusMessage,
                         profileImageName: state.profileImageName,
-                        isSaving: state.isSaving,
-                        continueWatching: state.continueWatching,
-                        myList: state.myList
+                        isSaving: state.isSaving
                     )
                 }
                 .asObservable(),
@@ -271,63 +219,5 @@ final class ProfileViewModel: BaseViewModel<ProfileViewModelAction, ProfileViewM
         var state = stateRelay.value
         mutation(&state)
         stateRelay.accept(state)
-    }
-}
-
-private extension ProfileViewModel {
-    static func makePosterContents(
-        from items: [PosterItem],
-        fallback: [PosterContent]
-    ) -> [PosterContent] {
-        guard items.isEmpty == false else { return fallback }
-        return items.map { item in
-            PosterContent(posterItem: item)
-        }
-    }
-
-    static func makeContinueWatchingContents() -> [PosterContent] {
-        let titles = [
-            "The Last Kingdom",
-            "Dark City",
-            "Silent River",
-            "Moonlight Run",
-            "Night Shift",
-            "Code Black"
-        ]
-
-        return titles.enumerated().map { index, title in
-            PosterContent(
-                posterItem: PosterItem(
-                    title: title,
-                    posterURL: URL(string: "https://picsum.photos/id/\(index + 101)/300/450")
-                )
-            )
-        }
-    }
-
-    static func makeMyListContents() -> [PosterContent] {
-        let titles = [
-            "Red Notice",
-            "Arcane",
-            "The Crown",
-            "Squid Game",
-            "Breaking Point",
-            "Wednesday",
-            "Extraction",
-            "Lucifer",
-            "The Witcher",
-            "Mindhunter",
-            "Beef",
-            "Narcos"
-        ]
-
-        return titles.enumerated().map { index, title in
-            PosterContent(
-                posterItem: PosterItem(
-                    title: title,
-                    posterURL: URL(string: "https://picsum.photos/id/\(index + 131)/300/450")
-                )
-            )
-        }
     }
 }

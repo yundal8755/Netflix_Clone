@@ -6,19 +6,25 @@
 //
 
 import UIKit
-import SnapKit
 import RxSwift
 import RxCocoa
 import NSObject_Rx
 
+protocol HomeViewControllerDelegate: AnyObject {
+    func didTapProfileButton()
+}
+
 final class HomeViewController: BaseViewController<HomeView> {
     
     private let viewModel: HomeViewModel
-    weak var coordinator: HomeCoordinating?
-    private var currentSections: [HomeViewModel.Section] = []
+    private let likedContentRepository: LikedContentRepositoryType
     
-    init(viewModel: HomeViewModel = HomeViewModel()) {
+    init(
+        viewModel: HomeViewModel = HomeViewModel(),
+        likedContentRepository: LikedContentRepositoryType = LikedContentRepository.shared
+    ) {
         self.viewModel = viewModel
+        self.likedContentRepository = likedContentRepository
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -38,18 +44,10 @@ final class HomeViewController: BaseViewController<HomeView> {
         super.viewDidLoad()
         navigationController?.setNavigationBarHidden(true, animated: false)
         
-        setupTableView() // 셀 등록
+        setupTableView()
         bindInput()
         bindOutput()
-        viewModel.send(action: .viewDidLoad) // VM에 viewDidLoad 액션 전달
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        // view가 화면에 나타나기 직전에 호출 (다른 화면 갔다가 돌아올 때마다 계속 호출됨)
-        // Home 화면 복귀 시에도 네비게이션 바가 항상 숨겨지도록 재적용
-        
-        super.viewWillAppear(animated)
-//        setNeedsStatusBarAppearanceUpdate()
+        viewModel.send(action: .viewDidLoad)
     }
 }
 
@@ -62,36 +60,16 @@ extension HomeViewController {
             HomeTableViewCell.self,
             forCellReuseIdentifier: HomeTableViewCell.reuseIdentifier
         )
+
+        mainView.homeTableView.contentInset.bottom = 98
+        mainView.homeTableView.verticalScrollIndicatorInsets.bottom = 98
     }
 
     private func route(to route: HomeViewModel.Route) {
         switch route {
-        case .profile:
-            routeToProfile()
+        case .search:
+            presentMessageAlert(message: "검색 기능은 곧 추가될 예정입니다.")
         }
-    }
-
-    private func routeToProfile() {
-        let (continueWatchingItems, myListItems) = makeProfileItems()
-
-        if let coordinator {
-            coordinator.showProfile(
-                from: self,
-                continueWatchingItems: continueWatchingItems,
-                myListItems: myListItems
-            )
-            return
-        }
-    }
-
-    private func makeProfileItems() -> (continueWatching: [PosterItem], myList: [PosterItem]) {
-        let allItems = currentSections.flatMap(\.items)
-        guard allItems.isEmpty == false else { return ([], []) }
-
-        let continueWatching = Array(allItems.prefix(10))
-        let myListCandidate = Array(allItems.dropFirst(10).prefix(30))
-        let myList = myListCandidate.isEmpty ? allItems : myListCandidate
-        return (continueWatching, myList)
     }
 }
 
@@ -100,16 +78,21 @@ extension HomeViewController {
 extension HomeViewController {
     
     func bindInput() {
-        // case 1) 프로필 버튼 클릭시
-        mainView.topBarView.profileButton.rx.tap
+        mainView.topBarView.searchButton.rx.tap
             .bind(with: self) { owner, _ in
-                owner.viewModel.send(action: .profileButtonTapped)
+                owner.viewModel.send(action: .searchButtonTapped)
+            }
+            .disposed(by: rx.disposeBag)
+
+        NotificationCenter.default.rx.notification(.likedContentDidUpdate)
+            .observe(on: MainScheduler.instance)
+            .bind(with: self) { owner, _ in
+                owner.refreshVisibleLikeStates()
             }
             .disposed(by: rx.disposeBag)
     }
     
     private func bindOutput() {
-        // case 1) sections 상태 구독
         viewModel.output.sections
             .observe(on: MainScheduler.instance)
             .bind(
@@ -118,18 +101,22 @@ extension HomeViewController {
                     cellType: HomeTableViewCell.self
                 )
             ) { _, item, cell in
-                cell.configure(with: item)
+                cell.configure(
+                    with: item,
+                    isLikedProvider: { [weak self] posterItem in
+                        self?.likedContentRepository.isLiked(movieID: posterItem.movieID) ?? false
+                    },
+                    onToggleLike: { [weak self] posterItem in
+                        self?.likedContentRepository.toggle(
+                            movieID: posterItem.movieID,
+                            title: posterItem.title,
+                            posterURL: posterItem.posterURL
+                        ) ?? false
+                    }
+                )
             }
             .disposed(by: rx.disposeBag)
 
-        viewModel.output.sections
-            .observe(on: MainScheduler.instance)
-            .subscribe(with: self) { owner, sections in
-                owner.currentSections = sections
-            }
-            .disposed(by: rx.disposeBag)
-        
-        // case 2) 일회성 네비게이션 트리거 처리
         viewModel.output.route
             .observe(on: MainScheduler.instance)
             .subscribe(with: self) { owner, route in
@@ -137,13 +124,18 @@ extension HomeViewController {
             }
             .disposed(by: rx.disposeBag)
 
-        // case 3) errorMessage 이벤트 표시
         viewModel.output.errorMessage
             .observe(on: MainScheduler.instance)
             .subscribe(with: self) { owner, message in
                 owner.presentMessageAlert(message: message)
             }
             .disposed(by: rx.disposeBag)
+    }
+
+    func refreshVisibleLikeStates() {
+        mainView.homeTableView.visibleCells
+            .compactMap { $0 as? HomeTableViewCell }
+            .forEach { $0.refreshLikeStates() }
     }
 }
 

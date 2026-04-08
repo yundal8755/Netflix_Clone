@@ -12,6 +12,7 @@ import SnapKit
 /// - `title`: 카드 하단 오버레이에 노출할 텍스트
 /// - `posterURL`: 원격 이미지 주소 (nil이면 placeholder 표시)
 struct PosterItem: Equatable {
+    let movieID: Int
     let title: String
     let posterURL: URL?
 }
@@ -36,6 +37,8 @@ final class PosterCollectionView: BaseView {
 
     /// 화면에 현재 바인딩된 포스터 데이터 원본
     private var items: [PosterItem] = []
+    private var isLikedProvider: ((PosterItem) -> Bool)?
+    private var onToggleLike: ((PosterItem) -> Bool)?
     /// 초기 중앙 정렬을 이미 수행했는지 여부 (중복 실행 방지)
     private var didSetInitialOffset = false
 
@@ -136,12 +139,15 @@ final class PosterCollectionView: BaseView {
 extension PosterCollectionView {
     /// 외부에서 새 섹션 데이터를 전달할 때 호출됩니다.
     /// 동일 데이터라면 `reloadData()`를 생략해 불필요한 렌더링 비용을 줄입니다.
-    func updateData(title: String, items: [PosterItem]) {
-        // 이전 상태와 완전히 동일하면 여기서 종료
-        if self.items == items, titleLabel.text == title { return }
-
-        // 내부 상태를 최신 데이터로 교체
+    func updateData(
+        title: String,
+        items: [PosterItem],
+        isLikedProvider: ((PosterItem) -> Bool)? = nil,
+        onToggleLike: ((PosterItem) -> Bool)? = nil
+    ) {
         self.items = items
+        self.isLikedProvider = isLikedProvider
+        self.onToggleLike = onToggleLike
         titleLabel.text = title
 
         // 데이터가 바뀌면 중앙 정렬 기준도 다시 잡아야 하므로 플래그 초기화
@@ -151,6 +157,22 @@ extension PosterCollectionView {
         posterCollectionView.reloadData()
         // 레이아웃 재계산 예약 (다음 렌더 사이클에서 반영)
         setNeedsLayout()
+    }
+
+    func refreshVisibleLikeStates() {
+        guard items.isEmpty == false else { return }
+
+        let visibleIndexPaths = posterCollectionView.indexPathsForVisibleItems
+
+        for indexPath in visibleIndexPaths {
+            guard let cell = posterCollectionView.cellForItem(at: indexPath) as? PosterCollectionViewCell else {
+                continue
+            }
+
+            let item = items[indexPath.item % items.count]
+            let isLiked = isLikedProvider?(item) ?? false
+            cell.updateLikedState(isLiked)
+        }
     }
 
     /// 첫 렌더링 시점에 스크롤 위치를 중앙 근처로 이동시켜,
@@ -238,7 +260,13 @@ extension PosterCollectionView: UICollectionViewDataSource {
 
         // 예: 2503번째 셀 요청 -> items.count가 10이면 실제 데이터는 3번째
         let item = items[indexPath.item % items.count]
-        cell.configure(with: item)
+        cell.configure(
+            with: item,
+            isLiked: isLikedProvider?(item) ?? false
+        )
+        cell.onTapHeartButton = { [weak self] in
+            self?.onToggleLike?(item) ?? false
+        }
         return cell
     }
 }
