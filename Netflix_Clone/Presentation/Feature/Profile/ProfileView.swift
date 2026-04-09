@@ -9,15 +9,30 @@ import UIKit
 import SnapKit
 
 final class ProfileView: BaseView {
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "마이페이지"
+        label.textColor = .white
+        label.font = .systemFont(ofSize: 30, weight: .bold)
+        return label
+    } ()
+    
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewLayout())
 
     override func configurationSetView() {
+        addSubview(titleLabel)
         addSubview(collectionView)
     }
 
     override func configurationLayout() {
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(safeAreaLayoutGuide).offset(16)
+            make.horizontalEdges.equalToSuperview().inset(20)
+        }
+
         collectionView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.top.equalTo(titleLabel.snp.bottom).offset(16)
+            make.horizontalEdges.bottom.equalToSuperview()
         }
     }
 
@@ -317,10 +332,3 @@ private extension ProfileInfoCollectionViewCell {
         onTapSaveButton?()
     }
 }
-
-#if DEBUG
-@available(iOS 17.0, *)
-#Preview {
-    ProfileViewController()
-}
-#endif

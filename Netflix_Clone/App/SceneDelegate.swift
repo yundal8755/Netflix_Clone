@@ -14,25 +14,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // 1. iOS가 준 scene 정보 확인
         guard let windowScene = scene as? UIWindowScene else { return }
         
-        // 2. 앱의 전체 틀이 될 window를 제작
         let window = UIWindow(windowScene: windowScene)
-        
-        // 3. Coordinator 시작 (루트 구성은 AppCoordinator가 담당)
+        self.window = window
+
         let appCoordinator = AppCoordinator(window: window)
+        self.appCoordinator = appCoordinator
         
         appCoordinator.start()
-        
-        self.appCoordinator = appCoordinator
-
-        // 4. 창을 메모리에 유지
-        self.window = window
-        
-        // 5. 화면에 창을 띄우기. 이 순간 뷰 생명주기가 시작됨
-        // 뷰 생명주기의 시작 = 첫 ViewController에서 loadView() 호출
-        window.makeKeyAndVisible()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {}

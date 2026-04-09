@@ -10,44 +10,33 @@ import RxSwift
 import RxCocoa
 import NSObject_Rx
 
-protocol HomeViewControllerDelegate: AnyObject {
-    func didTapProfileButton()
-}
-
 final class HomeViewController: BaseViewController<HomeView> {
     
     private let viewModel: HomeViewModel
-    private let likedContentRepository: LikedContentRepositoryType
+    private var likedMovieIDs: Set<Int> = []
+    weak var coordinator: HomeCoordinator?
     
-    init(
-        viewModel: HomeViewModel = HomeViewModel(),
-        likedContentRepository: LikedContentRepositoryType = LikedContentRepository.shared
-    ) {
+    init(viewModel: HomeViewModel = HomeViewModel()) {
         self.viewModel = viewModel
-        self.likedContentRepository = likedContentRepository
         super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        .lightContent
-    }
-
-    override var prefersStatusBarHidden: Bool {
-        false
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController?.setNavigationBarHidden(true, animated: false)
         
         setupTableView()
-        bindInput()
-        bindOutput()
+        setupBindings()
         viewModel.send(action: .viewDidLoad)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+        viewModel.send(action: .viewWillAppear)
     }
 }
 
@@ -64,30 +53,24 @@ extension HomeViewController {
         mainView.homeTableView.contentInset.bottom = 98
         mainView.homeTableView.verticalScrollIndicatorInsets.bottom = 98
     }
-
-    private func route(to route: HomeViewModel.Route) {
-        switch route {
-        case .search:
-            presentMessageAlert(message: "검색 기능은 곧 추가될 예정입니다.")
-        }
-    }
 }
 
 
 // MARK: - Business Logic
 extension HomeViewController {
     
+    // Rx 파이프라인 연결
+    func setupBindings() {
+        bindInput()
+        bindOutput()
+    }
+ 
     func bindInput() {
+        // rx.tap : RxCocoa의 UI 이벤트 스트림
         mainView.topBarView.searchButton.rx.tap
+            // bind(with:)로 VM에 액션 전달
             .bind(with: self) { owner, _ in
                 owner.viewModel.send(action: .searchButtonTapped)
-            }
-            .disposed(by: rx.disposeBag)
-
-        NotificationCenter.default.rx.notification(.likedContentDidUpdate)
-            .observe(on: MainScheduler.instance)
-            .bind(with: self) { owner, _ in
-                owner.refreshVisibleLikeStates()
             }
             .disposed(by: rx.disposeBag)
     }
@@ -104,23 +87,30 @@ extension HomeViewController {
                 cell.configure(
                     with: item,
                     isLikedProvider: { [weak self] posterItem in
-                        self?.likedContentRepository.isLiked(movieID: posterItem.movieID) ?? false
+                        self?.likedMovieIDs.contains(posterItem.movieID) ?? false
                     },
                     onToggleLike: { [weak self] posterItem in
-                        self?.likedContentRepository.toggle(
-                            movieID: posterItem.movieID,
-                            title: posterItem.title,
-                            posterURL: posterItem.posterURL
-                        ) ?? false
+                        self?.viewModel.send(action: .posterHeartTapped(posterItem))
                     }
                 )
             }
             .disposed(by: rx.disposeBag)
 
-        viewModel.output.route
+        viewModel.output.likedMovieIDs
             .observe(on: MainScheduler.instance)
+            .subscribe(with: self) { owner, likedMovieIDs in
+                owner.likedMovieIDs = likedMovieIDs
+                owner.refreshVisibleLikeStates()
+            }
+            .disposed(by: rx.disposeBag)
+
+        viewModel.output.route
+            // .observe(on:) :
+            .observe(on: MainScheduler.instance)
+            
+            // 스트림
             .subscribe(with: self) { owner, route in
-                owner.route(to: route)
+                owner.coordinator?.goRoute(route)
             }
             .disposed(by: rx.disposeBag)
 

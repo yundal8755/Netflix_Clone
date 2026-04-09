@@ -48,14 +48,6 @@ final class ProfileViewController: BaseViewController<ProfileView> {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        .lightContent
-    }
-
-    override var prefersStatusBarHidden: Bool {
-        false
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
 

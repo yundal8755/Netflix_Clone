@@ -31,7 +31,7 @@ final class HomeTableViewCell: UITableViewCell {
     func configure(
         with section: HomeViewModel.Section,
         isLikedProvider: ((PosterItem) -> Bool)? = nil,
-        onToggleLike: ((PosterItem) -> Bool)? = nil
+        onToggleLike: ((PosterItem) -> Void)? = nil
     ) {
         // 스크롤시 이미 만들어진 sectionView에 "데이터만 새로 업데이트 해!" 라고 명령만 내립니다.
         posterCollectionView.updateData(

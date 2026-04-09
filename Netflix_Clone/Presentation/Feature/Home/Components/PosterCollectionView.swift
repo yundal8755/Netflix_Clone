@@ -38,7 +38,7 @@ final class PosterCollectionView: BaseView {
     /// 화면에 현재 바인딩된 포스터 데이터 원본
     private var items: [PosterItem] = []
     private var isLikedProvider: ((PosterItem) -> Bool)?
-    private var onToggleLike: ((PosterItem) -> Bool)?
+    private var onToggleLike: ((PosterItem) -> Void)?
     /// 초기 중앙 정렬을 이미 수행했는지 여부 (중복 실행 방지)
     private var didSetInitialOffset = false
 
@@ -143,7 +143,7 @@ extension PosterCollectionView {
         title: String,
         items: [PosterItem],
         isLikedProvider: ((PosterItem) -> Bool)? = nil,
-        onToggleLike: ((PosterItem) -> Bool)? = nil
+        onToggleLike: ((PosterItem) -> Void)? = nil
     ) {
         self.items = items
         self.isLikedProvider = isLikedProvider
@@ -265,7 +265,7 @@ extension PosterCollectionView: UICollectionViewDataSource {
             isLiked: isLikedProvider?(item) ?? false
         )
         cell.onTapHeartButton = { [weak self] in
-            self?.onToggleLike?(item) ?? false
+            self?.onToggleLike?(item)
         }
         return cell
     }

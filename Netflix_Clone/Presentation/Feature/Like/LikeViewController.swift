@@ -5,13 +5,8 @@
 //  Created by Codex on 4/8/26.
 //
 
-// UIKit은 UIViewController, UICollectionView 등 화면 계층의 핵심 타입을 제공합니다.
 import UIKit
-// RxCocoa는 UIButton 탭 이벤트 같은 UIKit 바인딩을 쉽게 만들어 줍니다.
-import RxCocoa
-// RxSwift는 Observable/subscribe 같은 반응형 스트림 처리를 담당합니다.
 import RxSwift
-// NSObject-Rx는 ViewController에 disposeBag을 간편하게 붙여주는 유틸입니다.
 import NSObject_Rx
 
 // 컬렉션뷰 섹션 인덱스를 안전하게 관리하기 위한 열거형입니다.
@@ -54,8 +49,6 @@ final class LikeViewController: BaseViewController<LikeView> {
 
     // 화면 상태를 공급하는 ViewModel입니다.
     private let viewModel: LikeViewModel
-    // 좋아요 토글/조회 저장소입니다.
-    private let likedContentRepository: LikedContentRepositoryType
 
     // 컬렉션뷰에 데이터를 공급할 Diffable DataSource 인스턴스입니다.
     private var dataSource: DataSource?
@@ -71,14 +64,10 @@ final class LikeViewController: BaseViewController<LikeView> {
     // 의존성 주입 초기화입니다.
     init(
         // 기본 ViewModel을 주입하되, 테스트에서는 외부 인스턴스를 넣을 수 있습니다.
-        viewModel: LikeViewModel = LikeViewModel(),
-        // 기본 저장소는 shared를 사용합니다.
-        likedContentRepository: LikedContentRepositoryType = LikedContentRepository.shared
+        viewModel: LikeViewModel = LikeViewModel()
     ) {
         // 주입받은 ViewModel을 저장합니다.
         self.viewModel = viewModel
-        // 주입받은 저장소를 저장합니다.
-        self.likedContentRepository = likedContentRepository
         // 부모 초기화를 호출합니다.
         super.init(nibName: nil, bundle: nil)
     }
@@ -86,16 +75,6 @@ final class LikeViewController: BaseViewController<LikeView> {
     // 스토리보드 경로는 사용하지 않으므로 명시적으로 막습니다.
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    // 상태바 텍스트를 밝게(흰색) 표시합니다.
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        .lightContent
-    }
-
-    // 상태바를 숨기지 않습니다.
-    override var prefersStatusBarHidden: Bool {
-        false
     }
 
     // 뷰가 메모리에 로드된 직후 한 번 호출됩니다.
@@ -114,6 +93,11 @@ final class LikeViewController: BaseViewController<LikeView> {
 
         // 초기 데이터 로딩 액션을 보냅니다.
         viewModel.send(action: .viewDidLoad)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewModel.send(action: .viewWillAppear)
     }
 }
 
@@ -236,18 +220,13 @@ private extension LikeViewController {
 
         // 하트 버튼을 보여줘야 하는 섹션인지 분기합니다.
         if showsHeartButton {
-            // 현재 아이템이 이미 찜 상태인지 저장소에서 조회합니다.
-            let isLiked = likedContentRepository.isLiked(movieID: posterItem.movieID)
+            // 현재 state의 liked id 집합으로 하트 상태를 계산합니다.
+            let isLiked = currentState.likedMovieIDs.contains(posterItem.movieID)
             // 하트 노출 + 현재 좋아요 상태를 적용해 셀을 구성합니다.
             cell.configure(with: posterItem, isLiked: isLiked, showsHeartButton: true)
             // 하트 탭 시 좋아요 토글을 실행하는 클로저를 연결합니다.
             cell.onTapHeartButton = { [weak self] in
-                // self가 있으면 저장소 토글을 실행하고 결과 상태를 반환합니다.
-                self?.likedContentRepository.toggle(
-                    movieID: posterItem.movieID,
-                    title: posterItem.title,
-                    posterURL: posterItem.posterURL
-                ) ?? false
+                self?.viewModel.send(action: .heartButtonTapped(posterItem))
             }
         } else {
             // 하트 버튼이 필요 없는 섹션은 버튼을 숨기고 일반 구성만 합니다.
@@ -261,17 +240,7 @@ private extension LikeViewController {
     }
 
     // View 입력 이벤트(버튼 탭)를 ViewModel Action으로 연결합니다.
-    func bindInput() {
-        // 새로고침 버튼 탭 이벤트 스트림입니다.
-        mainView.refreshButton.rx.tap
-            // self를 약한 참조로 캡처해 메모리 누수를 방지합니다.
-            .bind(with: self) { owner, _ in
-                // 탭이 발생하면 refresh 액션을 전송합니다.
-                owner.viewModel.send(action: .refreshButtonTapped)
-            }
-            // disposeBag에 묶어 생명주기 종료 시 자동 해제합니다.
-            .disposed(by: rx.disposeBag)
-    }
+    func bindInput() {}
 
     // ViewModel 출력(state/error)을 구독해 화면에 반영합니다.
     func bindOutput() {
@@ -322,11 +291,6 @@ private extension LikeViewController {
             : "찜한 콘텐츠 \(likedCount)개"
         // 보조 타이틀 라벨에 문구를 반영합니다.
         mainView.subtitleLabel.text = countText
-
-        // 로딩 중에는 새로고침 버튼을 비활성화합니다.
-        mainView.refreshButton.isEnabled = state.isLoading == false
-        // 로딩 중 버튼 투명도를 낮춰 비활성 상태를 시각적으로 표현합니다.
-        mainView.refreshButton.alpha = state.isLoading ? 0.55 : 1
 
         // 마지막으로 diffable snapshot을 적용해 컬렉션뷰를 갱신합니다.
         applySnapshot()

@@ -55,8 +55,7 @@ final class PosterCollectionViewCell: UICollectionViewCell {
     private var isLiked = false
 
     /// 하트 버튼 탭 이벤트 콜백
-    /// - 반환값: 토글 후 최종 좋아요 상태
-    var onTapHeartButton: (() -> Bool)?
+    var onTapHeartButton: (() -> Void)?
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -254,7 +253,6 @@ extension PosterCollectionViewCell {
     }
 
     @objc func didTapHeartButton() {
-        let nextState = onTapHeartButton?() ?? (isLiked == false)
-        updateLikedState(nextState)
+        onTapHeartButton?()
     }
 }

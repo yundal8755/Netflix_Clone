@@ -55,9 +55,6 @@ private extension MainUITabBarController {
         appearance.backgroundColor = .black
 
         tabBar.standardAppearance = appearance
-        if #available(iOS 15.0, *) {
-            tabBar.scrollEdgeAppearance = appearance
-        }
     }
 
     func configureTabScenes() {

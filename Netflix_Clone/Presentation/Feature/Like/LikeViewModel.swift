@@ -7,8 +7,6 @@
 
 // Foundation은 URL, 배열, 딕셔너리, NotificationCenter 등 기본 타입/유틸을 제공합니다.
 import Foundation
-// RxCocoa는 UIKit 컴포넌트와 Rx를 연결하기 위한 확장 집합입니다.
-import RxCocoa
 // RxRelay는 error/completed 없이 값 전달에 특화된 Relay 타입을 제공합니다.
 import RxRelay
 // RxSwift는 Observable 기반 반응형 스트림 코어 라이브러리입니다.
@@ -19,10 +17,12 @@ import RxSwift
 enum LikeViewAction {
     // 화면이 처음 로딩되었을 때 호출되는 액션입니다.
     case viewDidLoad
+    // 화면이 다시 보일 때 최신 찜 상태를 다시 동기화합니다.
+    case viewWillAppear
     // 상단 새로고침 버튼이 눌렸을 때 호출되는 액션입니다.
     case refreshButtonTapped
-    // 외부(Home/Like 등)에서 좋아요 데이터가 변경되었음을 알리는 액션입니다.
-    case likedContentChanged
+    // 포스터 셀의 하트 버튼 탭 이벤트입니다.
+    case heartButtonTapped(PosterItem)
 }
 
 // Action을 처리한 뒤 상태를 어떻게 바꿀지 표현하는 "변경 단위"입니다.
@@ -34,6 +34,8 @@ enum LikeViewMutation {
     case setContinueWatching([LikePosterContent])
     // "내가 찜한 콘텐츠" 섹션 데이터를 통째로 갱신합니다.
     case setMyList([LikePosterContent])
+    // 좋아요 movieID 집합을 갱신합니다.
+    case setLikedMovieIDs(Set<Int>)
     // 에러 메시지 상태를 변경합니다.
     case setErrorMessage(String?)
 }
@@ -80,6 +82,8 @@ struct LikeViewState: Equatable {
     var continueWatching: [LikePosterContent] = []
     // "내가 찜한 콘텐츠" 섹션 데이터입니다.
     var myList: [LikePosterContent] = []
+    // 빠른 하트 상태 계산을 위한 좋아요 movieID 집합입니다.
+    var likedMovieIDs: Set<Int> = []
     // 화면 상태로 보관할 마지막 에러 메시지입니다.
     var errorMessage: String?
 }
@@ -119,9 +123,6 @@ final class LikeViewModel: BaseViewModel<LikeViewAction, LikeViewModelOutput> {
         )
         // 부모(BaseViewModel) 초기화를 호출합니다.
         super.init(output: output)
-
-        // 저장소 변경 알림(Notification)을 구독해, 외부 변경도 화면 상태에 반영합니다.
-        bindLikedContentUpdates()
     }
 
     // Action 진입점입니다.
@@ -132,11 +133,18 @@ final class LikeViewModel: BaseViewModel<LikeViewAction, LikeViewModelOutput> {
         case .viewDidLoad:
             // 초기 진입 시 화면 전체 상태를 구성합니다.
             bootstrapState()
+        case .viewWillAppear:
+            // 다른 탭에서 변경된 찜 상태를 다시 동기화합니다.
+            refreshMyList()
         case .refreshButtonTapped:
             // 수동 새로고침은 내 리스트만 다시 읽어오면 충분합니다.
             refreshMyList()
-        case .likedContentChanged:
-            // 외부 변경 알림이 와도 내 리스트만 다시 읽어오면 됩니다.
+        case .heartButtonTapped(let posterItem):
+            likedContentRepository.toggle(
+                movieID: posterItem.movieID,
+                title: posterItem.title,
+                posterURL: posterItem.posterURL
+            )
             refreshMyList()
         }
     }
@@ -145,22 +153,6 @@ final class LikeViewModel: BaseViewModel<LikeViewAction, LikeViewModelOutput> {
 
 // MARK: - Business Logic
 private extension LikeViewModel {
-
-    // 좋아요 저장소 변경 알림(Notification)을 Rx로 구독하는 메서드입니다.
-    func bindLikedContentUpdates() {
-        // NotificationCenter의 likedContentDidUpdate 알림을 Observable로 변환합니다.
-        NotificationCenter.default.rx.notification(.likedContentDidUpdate)
-            // UI/State 동기화를 위해 메인 스레드에서 처리합니다.
-            .observe(on: MainScheduler.instance)
-            // self를 약한 참조로 캡처해 순환 참조를 피합니다.
-            .bind(with: self) { owner, _ in
-                // 알림을 받으면 Action 형태로 재진입시켜 흐름을 일관화합니다.
-                owner.send(action: .likedContentChanged)
-            }
-            // disposeBag에 묶어 ViewModel 생명주기와 함께 자동 해제합니다.
-            .disposed(by: disposeBag)
-    }
-
     // 화면 최초 진입 시 필요한 상태를 한 번에 세팅합니다.
     func bootstrapState() {
         // 로딩 시작 상태를 먼저 반영합니다.
@@ -169,6 +161,8 @@ private extension LikeViewModel {
         apply(.setContinueWatching(Self.makeDummyContinueWatchingContents()))
         // 저장소에서 현재 찜 목록을 읽어 반영합니다.
         apply(.setMyList(makeMyListContents()))
+        // 찜 상태 집합도 함께 초기화합니다.
+        apply(.setLikedMovieIDs(makeLikedMovieIDs()))
         // 이전 에러 메시지를 초기화합니다.
         apply(.setErrorMessage(nil))
         // 로딩 종료 상태를 반영합니다.
@@ -179,6 +173,12 @@ private extension LikeViewModel {
     func refreshMyList() {
         // 저장소 최신값으로 myList를 교체합니다.
         apply(.setMyList(makeMyListContents()))
+        // 저장소 최신값으로 liked id 집합도 교체합니다.
+        apply(.setLikedMovieIDs(makeLikedMovieIDs()))
+    }
+
+    func makeLikedMovieIDs() -> Set<Int> {
+        Set(likedContentRepository.fetchLikedPosters().map(\.movieID))
     }
 
     // 저장소 모델(LikedPoster)을 화면 모델(LikePosterContent)로 변환합니다.
@@ -277,6 +277,9 @@ private extension LikeViewModel {
         case .setMyList(let items):
             // 내 리스트 섹션 데이터를 통째로 교체합니다.
             state.myList = items
+
+        case .setLikedMovieIDs(let movieIDs):
+            state.likedMovieIDs = movieIDs
 
         case .setErrorMessage(let message):
             // 상태 내 에러 메시지를 갱신합니다.

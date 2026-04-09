@@ -16,12 +16,15 @@ import RxRelay // 네트워크 에러 발생시 버튼 클릭 이벤트가 UI에
 // MARK: - Action & Output
 enum HomeViewModelAction {
     case viewDidLoad
+    case viewWillAppear
     case searchButtonTapped
+    case posterHeartTapped(PosterItem)
 }
 
 struct HomeViewModelOutput {
     let sections: Observable<[HomeViewModel.Section]>
-    let route: Observable<HomeViewModel.Route>
+    let likedMovieIDs: Observable<Set<Int>>
+    let route: Observable<HomeCoordinatorCase>
     let errorMessage: Observable<String>
 }
 
@@ -32,22 +35,29 @@ final class HomeViewModel: BaseViewModel<HomeViewModelAction, HomeViewModelOutpu
         let title: String
         let items: [PosterItem]
     }
-
-    enum Route {
-        case search
-    }
     
+    // 지속 상태라서 Behavior로 분리
     private let sectionsRelay = BehaviorRelay<[Section]>(value: [])
+    private let likedMovieIDsRelay = BehaviorRelay<Set<Int>>(value: [])
     private let isLoadingRelay = BehaviorRelay<Bool>(value: false)
-    private let routeRelay = PublishRelay<Route>()
+    
+    // 순간 신호라서 Publish로 분리
+    private let routeRelay = PublishRelay<HomeCoordinatorCase>()
     private let errorMessageRelay = PublishRelay<String>()
+    
     private let networkManager: NetworkManagerType
+    private let likedContentRepository: LikedContentRepositoryType
 
-    init(networkManager: NetworkManagerType = NetworkManager()) {
+    init(
+        networkManager: NetworkManagerType = NetworkManager(),
+        likedContentRepository: LikedContentRepositoryType = LikedContentRepository.shared
+    ) {
         self.networkManager = networkManager
+        self.likedContentRepository = likedContentRepository
         
         let output = HomeViewModelOutput(
             sections: sectionsRelay.asObservable(),
+            likedMovieIDs: likedMovieIDsRelay.asObservable(),
             route: routeRelay.asObservable(),
             errorMessage: errorMessageRelay.asObservable()
         )
@@ -58,9 +68,19 @@ final class HomeViewModel: BaseViewModel<HomeViewModelAction, HomeViewModelOutpu
     override func send(action: HomeViewModelAction) {
         switch action {
         case .viewDidLoad:
+            refreshLikedMovieIDs()
             fetchSections()
+        case .viewWillAppear:
+            refreshLikedMovieIDs()
         case .searchButtonTapped:
-            routeRelay.accept(.search)
+            routeRelay.accept(.searchView)
+        case .posterHeartTapped(let posterItem):
+            likedContentRepository.toggle(
+                movieID: posterItem.movieID,
+                title: posterItem.title,
+                posterURL: posterItem.posterURL
+            )
+            refreshLikedMovieIDs()
         }
     }
 }
@@ -68,6 +88,11 @@ final class HomeViewModel: BaseViewModel<HomeViewModelAction, HomeViewModelOutpu
 
 // MARK: - Network DTO
 private extension HomeViewModel {
+    func refreshLikedMovieIDs() {
+        let likedIDs = Set(likedContentRepository.fetchLikedPosters().map(\.movieID))
+        likedMovieIDsRelay.accept(likedIDs)
+    }
+
     // 1. api 호출
     private func fetchSections() {
         // viewDidLoad 이벤트가 중복으로 들어와도 요청을 한 번만 수행하도록 가드합니다.
