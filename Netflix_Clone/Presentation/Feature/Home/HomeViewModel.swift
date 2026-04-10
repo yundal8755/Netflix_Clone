@@ -45,14 +45,15 @@ final class HomeViewModel: BaseViewModel<HomeViewModelAction, HomeViewModelOutpu
     private let routeRelay = PublishRelay<HomeCoordinatorCase>()
     private let errorMessageRelay = PublishRelay<String>()
     
-    private let networkManager: NetworkManagerType
+    private let tmdbService: TMDBServiceType
     private let likedContentRepository: LikedContentRepositoryType
+    private var fetchTask: Task<Void, Never>?
 
     init(
-        networkManager: NetworkManagerType = NetworkManager(),
+        tmdbService: TMDBServiceType = TMDBService(),
         likedContentRepository: LikedContentRepositoryType = LikedContentRepository.shared
     ) {
-        self.networkManager = networkManager
+        self.tmdbService = tmdbService
         self.likedContentRepository = likedContentRepository
         
         let output = HomeViewModelOutput(
@@ -98,39 +99,38 @@ private extension HomeViewModel {
         // viewDidLoad 이벤트가 중복으로 들어와도 요청을 한 번만 수행하도록 가드합니다.
         guard isLoadingRelay.value == false else { return }
         isLoadingRelay.accept(true)
+        
+        // TODO : GCD랑 Concurrency
+        fetchTask?.cancel()
+        
+        // TODO : GCD랑 Concurrency
+        fetchTask = Task {
+            do {
+                async let popular = tmdbService.requestPopular()
+                async let trending = tmdbService.requestTrending()
+                async let action = tmdbService.requestAction()
+                async let upcoming = tmdbService.requestUpcoming()
 
-        Single.zip(
-            // 여러 Single이 모두 성공했을 때 결과를 한 번에 결합 -> 하나라도 실패시 전체 실패
-            networkManager.fetchPopularMovies(),
-            networkManager.fetchTrendingMovies(),
-            networkManager.fetchActionMovies(),
-            networkManager.fetchUpcomingMovies()
-        )
-        .subscribe(
-            with: self,
-            onSuccess: { owner, response in
-                owner.isLoadingRelay.accept(false)
-
-                let (popularMovies, trendingMovies, actionMovies, upcomingMovies) = response
-
-                // 상태 데이터 갱신
-                owner.sectionsRelay.accept(
-                    owner.makeSections(
-                        popularMovies: popularMovies,
-                        trendingMovies: trendingMovies,
-                        actionMovies: actionMovies,
-                        upcomingMovies: upcomingMovies
-                    )
+                let response = try await (popular, trending, action, upcoming)
+                
+                let sections = makeSections(
+                    popularMovies: response.0,
+                    trendingMovies: response.1,
+                    actionMovies: response.2,
+                    upcomingMovies: response.3
                 )
-            },
-            onFailure: { owner, error in
-                owner.isLoadingRelay.accept(false)
 
-                // 일회성 에러 이벤트 방출
-                owner.errorMessageRelay.accept(owner.userFacingErrorMessage(from: error))
+                await MainActor.run {
+                    isLoadingRelay.accept(false)
+                    sectionsRelay.accept(sections)
+                }
+            } catch {
+                await MainActor.run {
+                    isLoadingRelay.accept(false)
+                    errorMessageRelay.accept(self.userFacingErrorMessage(from: error))
+                }
             }
-        )
-        .disposed(by: disposeBag)
+        }
     }
     
     // 에러 메시지

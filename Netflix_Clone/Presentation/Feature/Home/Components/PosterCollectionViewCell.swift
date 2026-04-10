@@ -8,6 +8,7 @@
 import UIKit
 import SnapKit
 import Alamofire
+import Kingfisher
 
 final class PosterCollectionViewCell: UICollectionViewCell {
 
@@ -33,7 +34,7 @@ final class PosterCollectionViewCell: UICollectionViewCell {
 
     /// 이미지 URL 문자열 기준으로 캐싱해서 중복 다운로드를 줄입니다.
     /// static으로 두면 셀 인스턴스가 달라도 동일 캐시를 공유합니다.
-    private static let imageCache = NSCache<NSString, UIImage>()
+    private static let imageCache = NSCache<NSString, UIImage>() // 감점 사유 셀 = 재사용셀 캐시를 지금 4개정도 각 섹션별로 따로 관리하고 있으셈 뿌직 -> Global 하게 관리하면 따봉추
 
     /// 카드 전체 배경 컨테이너
     private let posterBackgroundView = UIView()
@@ -184,53 +185,19 @@ extension PosterCollectionViewCell {
     /// 4) 캐시 미스면 네트워크 요청
     /// 5) 응답 시 현재 URL과 일치하는지 확인 후 반영
     private func loadPosterImage(from url: URL?) {
-        // 기존 요청이 남아 있으면 취소 (재사용 셀 안전성)
-        imageRequest?.cancel()
-        imageRequest = nil
-
-        // 이 셀이 "지금 의도하는 이미지 URL" 기록
-        currentPosterURL = url
-
-        // URL 자체가 없으면 placeholder 유지
-        guard let url else {
-            posterImageView.image = Constant.placeholderImage
-            return
-        }
-
-        // URL 문자열을 캐시 키로 사용
-        let cacheKey = url.absoluteString as NSString
-
-        // 메모리 캐시 히트면 즉시 표시 후 종료
-        if let cachedImage = Self.imageCache.object(forKey: cacheKey) {
-            posterImageView.image = cachedImage
-            return
-        }
-
-        // 캐시 미스 시 로딩 전 placeholder
-        posterImageView.image = Constant.placeholderImage
-
-        // 네트워크 요청 시작
-        imageRequest = AF.request(url)
-            .validate(statusCode: 200 ..< 300)
-            .responseData(queue: .main) { [weak self] response in
-                guard let self else { return }
-                // 셀이 재사용되어 다른 URL을 표시 중이면, 늦게 도착한 응답은 폐기
-                guard self.currentPosterURL == url else { return }
-                self.imageRequest = nil
-
-                switch response.result {
-                case .success(let data):
-                    // 이미지 디코딩 성공 시 캐시에 저장 후 표시
-                    if let image = UIImage(data: data) {
-                        Self.imageCache.setObject(image, forKey: cacheKey)
-                        self.posterImageView.image = image
-                    } else {
-                        // 데이터가 이미지로 변환되지 않으면 fallback
-                        self.posterImageView.image = Constant.placeholderImage
-                    }
-                case .failure:
-                    // 요청 실패 시 fallback
-                    self.posterImageView.image = Constant.placeholderImage
+        self.posterImageView.kf
+            .setImage(
+                with: url,
+                options: [
+                    .cacheMemoryOnly, // Ram
+                    .transition(.fade(0.5))
+                ]
+            ) { result in
+                switch result {
+                case .success(_):
+                    print("HAPPY")
+                case let .failure(error):
+                    print("UnHAPPY \(error.errorCode)")
                 }
             }
     }

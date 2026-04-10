@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		043A3AC72F88E15A00FDDA24 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 043A3AC62F88E15A00FDDA24 /* Kingfisher */; };
+		043A3AD42F88E89E00FDDA24 /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = 043A3AD32F88E89E00FDDA24 /* SwiftyBeaver */; };
 		04646E2A2F7DEBE6001609E5 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E292F7DEBE6001609E5 /* SnapKit */; };
 		04646E2F2F7DEBFF001609E5 /* NSObject-Rx in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E2E2F7DEBFF001609E5 /* NSObject-Rx */; };
 		04646E332F7DEC2D001609E5 /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E322F7DEC2D001609E5 /* RxCocoa */; };
@@ -55,9 +57,11 @@
 				04646E332F7DEC2D001609E5 /* RxCocoa in Frameworks */,
 				04646E2F2F7DEBFF001609E5 /* NSObject-Rx in Frameworks */,
 				04646E3A2F7EF000001609E5 /* RealmSwift in Frameworks */,
+				043A3AC72F88E15A00FDDA24 /* Kingfisher in Frameworks */,
 				04646E372F7DEC39001609E5 /* RxSwift in Frameworks */,
 				04646E352F7DEC39001609E5 /* RxRelay in Frameworks */,
 				04646E2A2F7DEBE6001609E5 /* SnapKit in Frameworks */,
+				043A3AD42F88E89E00FDDA24 /* SwiftyBeaver in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -126,6 +130,8 @@
 				04646E322F7DEC2D001609E5 /* RxCocoa */,
 				04646E342F7DEC39001609E5 /* RxRelay */,
 				04646E362F7DEC39001609E5 /* RxSwift */,
+				043A3AC62F88E15A00FDDA24 /* Kingfisher */,
+				043A3AD32F88E89E00FDDA24 /* SwiftyBeaver */,
 			);
 			productName = Netflix_Clone;
 			productReference = 0441B3B42F7D6147001B0FAB /* Netflix_Clone.app */;
@@ -161,6 +167,8 @@
 				04646E2D2F7DEBFF001609E5 /* XCRemoteSwiftPackageReference "NSObject-Rx" */,
 				04646E3D2F7EF000001609E5 /* XCRemoteSwiftPackageReference "realm-swift" */,
 				04646E302F7DEC15001609E5 /* XCRemoteSwiftPackageReference "RxSwift" */,
+				043A3AC52F88E15A00FDDA24 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				043A3AD22F88E89E00FDDA24 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0441B3B52F7D6147001B0FAB /* Products */;
@@ -412,6 +420,22 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		043A3AC52F88E15A00FDDA24 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.8.1;
+			};
+		};
+		043A3AD22F88E89E00FDDA24 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftyBeaver/SwiftyBeaver.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.1;
+			};
+		};
 		04646E282F7DEBE6001609E5 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
@@ -455,6 +479,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		043A3AC62F88E15A00FDDA24 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 043A3AC52F88E15A00FDDA24 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+		043A3AD32F88E89E00FDDA24 /* SwiftyBeaver */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 043A3AD22F88E89E00FDDA24 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */;
+			productName = SwiftyBeaver;
+		};
 		04646E292F7DEBE6001609E5 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 04646E282F7DEBE6001609E5 /* XCRemoteSwiftPackageReference "SnapKit" */;

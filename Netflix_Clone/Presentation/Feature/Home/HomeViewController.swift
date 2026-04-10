@@ -13,8 +13,10 @@ import NSObject_Rx
 final class HomeViewController: BaseViewController<HomeView> {
     
     private let viewModel: HomeViewModel
-    private var likedMovieIDs: Set<Int> = []
     weak var coordinator: HomeCoordinator?
+    private var likedMovieIDs: Set<Int> = []
+    
+    private var aEvent = 3
     
     init(viewModel: HomeViewModel = HomeViewModel()) {
         self.viewModel = viewModel
@@ -66,20 +68,24 @@ extension HomeViewController {
     }
  
     func bindInput() {
-        // rx.tap : RxCocoa의 UI 이벤트 스트림
         mainView.topBarView.searchButton.rx.tap
-            // bind(with:)로 VM에 액션 전달
-            .bind(with: self) { owner, _ in
+            .bind(with: self) { owner, event in // 결과에 대한
                 owner.viewModel.send(action: .searchButtonTapped)
             }
+//            .withUnretained(self)
+//            .bind { owner, _ in
+//                owner.viewModel.send(action: .searchButtonTapped)
+//            }
             .disposed(by: rx.disposeBag)
     }
+    
+
     
     private func bindOutput() {
         viewModel.output.sections
             .observe(on: MainScheduler.instance)
             .bind(
-                to: mainView.homeTableView.rx.items(
+                to: mainView.homeTableView.rx.items( // Steam 을 바로 전달 ->
                     cellIdentifier: HomeTableViewCell.reuseIdentifier,
                     cellType: HomeTableViewCell.self
                 )
@@ -103,6 +109,21 @@ extension HomeViewController {
                 owner.refreshVisibleLikeStates()
             }
             .disposed(by: rx.disposeBag)
+        
+        // Dispatch -> SwiftConcurrency
+        DispatchQueue.global().async {
+            // 1번 암탉 쓰레드 UI 쓰레드가 아니에요 X번
+            // owner.coordinator?.goRoute(route) -> UI 를 동작해야하는 함수이죠
+            // 앱이 꺼질 꺼에요
+            DispatchQueue.main.async { // MainThread 를 보장 할래요
+                // owner.coordinator?.goRoute(route)
+            }
+            
+//            DispatchQueue.global(qos: .background).async { [unowned self] in // 절대 옵셔널 아님
+////                coordinator
+//            }
+            
+        }
 
         viewModel.output.route
             // .observe(on:) :

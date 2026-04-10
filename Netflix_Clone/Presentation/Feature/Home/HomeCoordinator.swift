@@ -18,7 +18,7 @@ enum HomeCoordinatorCase: Equatable, Hashable {
 final class HomeCoordinator: Coordinator {
 
     var childCoordinators: [Coordinator] = []
-    let navigationController: UINavigationController?
+    weak var navigationController: UINavigationController?
 
     init() {
         let homeViewController = HomeViewController()
@@ -48,12 +48,17 @@ final class HomeCoordinator: Coordinator {
 // MARK: Route
 extension HomeCoordinator {
     private func showSearch() {
-        let viewController = UIViewController()
+        let viewController = AViewController()
         viewController.view.backgroundColor = .red
         viewController.title = "검색"
         viewController.hidesBottomBarWhenPushed = true
 
         navigationController?.setNavigationBarHidden(false, animated: false)
-        next(viewController: viewController)
+        navigationController?.pushViewController(viewController, animated: true)
+//        next(viewController: viewController)
     }
+}
+
+final class AViewController: BaseViewController<UIView> {
+    
 }

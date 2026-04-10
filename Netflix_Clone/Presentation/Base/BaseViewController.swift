@@ -10,6 +10,15 @@ import UIKit
 class BaseViewController<V: UIView>: UIViewController {
     let mainView = V()
     
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        print("**** \(#function) : \(String(describing: type(of: self))) ****")
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func loadView() {
         super.loadView()
         self.view = mainView
@@ -44,5 +53,9 @@ class BaseViewController<V: UIView>: UIViewController {
             )
         )
         present(alert, animated: animated)
+    }
+    
+    deinit {
+        print("**** \(#function) : \(String(describing: type(of: self))) ****")
     }
 }
