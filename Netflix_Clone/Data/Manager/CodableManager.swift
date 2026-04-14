@@ -7,6 +7,8 @@
 
 import Foundation
 
+// 무조건 좋은건 아님
+// 네트워크같은 빈번한 요청이 아닌 ui vm에서는 별로 안 좋음 -> 무거워져서
 public final class CodableManager: Sendable {
     
     public static let shared = CodableManager()

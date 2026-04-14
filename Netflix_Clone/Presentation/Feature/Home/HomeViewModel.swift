@@ -29,6 +29,7 @@ struct HomeViewModelOutput {
 }
 
 
+
 // MARK: - ViewModel
 final class HomeViewModel: BaseViewModel<HomeViewModelAction, HomeViewModelOutput> {
     struct Section {
@@ -46,14 +47,17 @@ final class HomeViewModel: BaseViewModel<HomeViewModelAction, HomeViewModelOutpu
     private let errorMessageRelay = PublishRelay<String>()
     
     private let tmdbService: TMDBServiceType
+    private let tmdbMapper: TMDBMapperType
     private let likedContentRepository: LikedContentRepositoryType
     private var fetchTask: Task<Void, Never>?
 
     init(
         tmdbService: TMDBServiceType = TMDBService(),
+        tmdbMapper: TMDBMapperType = TMDBMapper(),
         likedContentRepository: LikedContentRepositoryType = LikedContentRepository.shared
     ) {
         self.tmdbService = tmdbService
+        self.tmdbMapper = tmdbMapper
         self.likedContentRepository = likedContentRepository
         
         let output = HomeViewModelOutput(
@@ -147,28 +151,22 @@ private extension HomeViewModel {
     
     // 2. 각 카테고리 API 결과를 화면용 섹션 배열로 조합
     func makeSections(
-        popularMovies: [TMDBMovieDTO],
-        trendingMovies: [TMDBMovieDTO],
-        actionMovies: [TMDBMovieDTO],
-        upcomingMovies: [TMDBMovieDTO]
+        popularMovies: [TMDBMovieEntity],
+        trendingMovies: [TMDBMovieEntity],
+        actionMovies: [TMDBMovieEntity],
+        upcomingMovies: [TMDBMovieEntity]
     ) -> [Section] {
         // 섹션 제목은 엔드포인트 정의(TMDBEndpoint)의 sectionTitle을 재사용
         return [
-            Section(title: TMDBEndpoint.popular.sectionTitle, items: mapPosterItems(from: popularMovies)),
-            Section(title: TMDBEndpoint.trending.sectionTitle, items: mapPosterItems(from: trendingMovies)),
-            Section(title: TMDBEndpoint.action.sectionTitle, items: mapPosterItems(from: actionMovies)),
-            Section(title: TMDBEndpoint.upcoming.sectionTitle, items: mapPosterItems(from: upcomingMovies))
+            Section(title: TMDBSession.popular.sectionTitle, items: mapPosterItems(from: popularMovies)),
+            Section(title: TMDBSession.trending.sectionTitle, items: mapPosterItems(from: trendingMovies)),
+            Section(title: TMDBSession.action.sectionTitle, items: mapPosterItems(from: actionMovies)),
+            Section(title: TMDBSession.upcoming.sectionTitle, items: mapPosterItems(from: upcomingMovies))
         ]
     }
 
     // DTO -> PosterItem으로 변환 (최대 10개만 노출)
-    func mapPosterItems(from movies: [TMDBMovieDTO]) -> [PosterItem] {
-        movies.prefix(10).map { movie in
-            PosterItem(
-                movieID: movie.id,
-                title: movie.displayTitle,
-                posterURL: movie.posterImageURL
-            )
-        }
+    func mapPosterItems(from movies: [TMDBMovieEntity]) -> [PosterItem] {
+        tmdbMapper.mapPosterItems(from: movies)
     }
 }

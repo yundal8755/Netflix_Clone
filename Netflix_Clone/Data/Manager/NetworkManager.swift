@@ -8,13 +8,11 @@
 import Foundation
 import Alamofire
 
-@available(*, deprecated, renamed: "TMDBServiceType")
-typealias NetworkManagerType = TMDBServiceType
-
-@available(*, deprecated, renamed: "TMDBService")
-typealias NetworkManager = TMDBService
-
-final class RouterManager: Sendable {
+// Sendable
+// 1. 보낼수있다.
+// -> 다른 쓰레드간 송수신시 데이터 레이스가 일어나지 않음을 개발자가 보장하겠습니다.
+final class NetworkManager: Sendable {
+    
     func requestNetwork<T: Decodable, R: TargetType>(
         dto: T.Type,
         router: R
@@ -25,7 +23,8 @@ final class RouterManager: Sendable {
     }
 }
 
-private extension RouterManager {
+private extension NetworkManager {
+    
     func performRequest<T: Decodable>(
         dtoType: T.Type,
         request: URLRequest
