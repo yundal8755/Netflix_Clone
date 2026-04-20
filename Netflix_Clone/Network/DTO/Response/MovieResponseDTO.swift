@@ -7,11 +7,11 @@
 
 import Foundation
 
-struct TMDBMovieListResponseDTO: Decodable {
-    let results: [TMDBMovieDTO]
+struct MovieListResponseDTO: Decodable {
+    let results: [MovieResponseDTO]
 }
 
-struct TMDBMovieDTO: Decodable {
+struct MovieResponseDTO: Decodable {
     let id: Int
     let title: String?
     let name: String?

@@ -12,6 +12,7 @@ final class MainTabCoordinator: Coordinator {
     var childCoordinators: [Coordinator] = []
 
     weak var navigationController: UINavigationController?
+    private weak var tabBarController: MainUITabBarController?
 
     private typealias TabFlow = (tab: MainTab, coordinator: Coordinator)
 
@@ -21,7 +22,7 @@ final class MainTabCoordinator: Coordinator {
 
     func start() {
         let flows: [TabFlow] = [
-            (.home, HomeCoordinator()),
+            (.home, HomeCoordinator(delegate: self)),
             (.likes, LikeCoordinator()),
             (.profile, ProfileCoordinator())
         ]
@@ -36,10 +37,25 @@ final class MainTabCoordinator: Coordinator {
             scenes: makeTabScenes(flows: flows),
             initialTab: .home
         )
+        tabBarController = tabController
 
         // App 루트 네비게이션 바는 숨기고, 각 탭 내부 네비게이션이 헤더를 관리합니다.
         navigationController?.setNavigationBarHidden(true, animated: false)
         navigationController?.setViewControllers([tabController], animated: false)
+    }
+}
+
+extension MainTabCoordinator: HomeCoordinatorDelegate {
+    func homeCoordinator(_ coordinator: HomeCoordinator, didRequestSeeAll payload: SeeAllSheetPayload) {
+        let contentViewController = SeeAllBottomSheetViewController(
+            sectionTitle: payload.title,
+            items: payload.items
+        )
+        let bottomSheetViewController = CustomBottomSheetViewController(
+            contentViewController: contentViewController
+        )
+
+        tabBarController?.present(bottomSheetViewController, animated: false)
     }
 }
 

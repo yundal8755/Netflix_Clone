@@ -79,8 +79,6 @@ extension HomeViewController {
             .disposed(by: rx.disposeBag)
     }
     
-
-    
     private func bindOutput() {
         viewModel.output.sections
             .observe(on: MainScheduler.instance)
@@ -90,6 +88,7 @@ extension HomeViewController {
                     cellType: HomeTableViewCell.self
                 )
             ) { _, item, cell in
+                cell.delegate = self
                 cell.configure(
                     with: item,
                     isLikedProvider: { [weak self] posterItem in
@@ -147,6 +146,12 @@ extension HomeViewController {
         mainView.homeTableView.visibleCells
             .compactMap { $0 as? HomeTableViewCell }
             .forEach { $0.refreshLikeStates() }
+    }
+}
+
+extension HomeViewController: HomeTableViewCellDelegate {
+    func homeTableViewCell(_ cell: HomeTableViewCell, didTapSeeAll section: HomeViewModel.Section) {
+        coordinator?.showSeeAll(for: section)
     }
 }
 

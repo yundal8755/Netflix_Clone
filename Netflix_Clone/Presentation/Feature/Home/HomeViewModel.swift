@@ -37,12 +37,16 @@ final class HomeViewModel: BaseViewModel<HomeViewModelAction, HomeViewModelOutpu
         let items: [PosterItem]
     }
     
-    // 지속 상태라서 Behavior로 분리
+    // BehaviorRelay : State를 기억하는 놈
+    // 누군가 새로 구독하면 상태를 즉시 알려줌
+    // ex) 현재 텍스트가 뭐야? 스위치가 켜졌어?
     private let sectionsRelay = BehaviorRelay<[Section]>(value: [])
     private let likedMovieIDsRelay = BehaviorRelay<Set<Int>>(value: [])
     private let isLoadingRelay = BehaviorRelay<Bool>(value: false)
     
-    // 순간 신호라서 Publish로 분리
+    // PublishRelay : Event를 쏘는 놈
+    // 기억x, 화면에 무언가를 일회성으로 실행시킬 때 사용
+    // ex) 다음 화면으로 넘어가, Alert 띄워
     private let routeRelay = PublishRelay<HomeCoordinatorCase>()
     private let errorMessageRelay = PublishRelay<String>()
     
@@ -73,8 +77,7 @@ final class HomeViewModel: BaseViewModel<HomeViewModelAction, HomeViewModelOutpu
     override func send(action: HomeViewModelAction) {
         switch action {
         case .viewDidLoad:
-            refreshLikedMovieIDs()
-            fetchSections()
+            fetchSections() // api 호출
         case .viewWillAppear:
             refreshLikedMovieIDs()
         case .searchButtonTapped:
@@ -100,16 +103,16 @@ private extension HomeViewModel {
 
     // 1. api 호출
     private func fetchSections() {
-        // viewDidLoad 이벤트가 중복으로 들어와도 요청을 한 번만 수행하도록 가드합니다.
         guard isLoadingRelay.value == false else { return }
         isLoadingRelay.accept(true)
         
-        // TODO : GCD랑 Concurrency
+        // 이전에 요청한 네트워크 작업 돌고있다면 취소시킴
         fetchTask?.cancel()
         
-        // TODO : GCD랑 Concurrency
+        // Task {...} : 비동기 코드 실행임을 선언
         fetchTask = Task {
             do {
+                // 벙렬 실행
                 async let popular = tmdbService.requestPopular()
                 async let trending = tmdbService.requestTrending()
                 async let action = tmdbService.requestAction()
@@ -123,7 +126,9 @@ private extension HomeViewModel {
                     actionMovies: response.2,
                     upcomingMovies: response.3
                 )
-
+                
+                // 기존 GCD에서 쓰던 DispatchQueue.main.async의 최신 버전
+                // 메인 스레드를 의미
                 await MainActor.run {
                     isLoadingRelay.accept(false)
                     sectionsRelay.accept(sections)
@@ -136,6 +141,7 @@ private extension HomeViewModel {
             }
         }
     }
+
     
     // 에러 메시지
     func userFacingErrorMessage(from error: Error) -> String {
@@ -165,8 +171,28 @@ private extension HomeViewModel {
         ]
     }
 
-    // DTO -> PosterItem으로 변환 (최대 10개만 노출)
+    // Entity -> PosterItem으로 변환 (최대 10개만 노출)
     func mapPosterItems(from movies: [TMDBMovieEntity]) -> [PosterItem] {
         tmdbMapper.mapPosterItems(from: movies)
+    }
+}
+
+enum TMDBSession: CaseIterable {
+    case popular
+    case trending
+    case action
+    case upcoming
+
+    var sectionTitle: String {
+        switch self {
+        case .popular:
+            return "Popular"
+        case .trending:
+            return "Trend"
+        case .action:
+            return "Action"
+        case .upcoming:
+            return "Upcomming"
+        }
     }
 }

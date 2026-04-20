@@ -6,15 +6,22 @@
 import UIKit
 import SnapKit
 
+protocol HomeTableViewCellDelegate: AnyObject {
+    func homeTableViewCell(_ cell: HomeTableViewCell, didTapSeeAll section: HomeViewModel.Section)
+}
+
 final class HomeTableViewCell: UITableViewCell {
     
     private let posterCollectionView = PosterCollectionView()
+    private var currentSection: HomeViewModel.Section?
+    weak var delegate: HomeTableViewCellDelegate?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
 
         backgroundColor = .clear
         selectionStyle = .none
+        posterCollectionView.delegate = self
         
         contentView.addSubview(posterCollectionView)
         
@@ -33,6 +40,8 @@ final class HomeTableViewCell: UITableViewCell {
         isLikedProvider: ((PosterItem) -> Bool)? = nil,
         onToggleLike: ((PosterItem) -> Void)? = nil
     ) {
+        currentSection = section
+
         // 스크롤시 이미 만들어진 sectionView에 "데이터만 새로 업데이트 해!" 라고 명령만 내립니다.
         posterCollectionView.updateData(
             title: section.title,
@@ -44,5 +53,12 @@ final class HomeTableViewCell: UITableViewCell {
 
     func refreshLikeStates() {
         posterCollectionView.refreshVisibleLikeStates()
+    }
+}
+
+extension HomeTableViewCell: PosterCollectionViewDelegate {
+    func posterCollectionViewDidTapSeeAll(_ posterCollectionView: PosterCollectionView) {
+        guard let currentSection else { return }
+        delegate?.homeTableViewCell(self, didTapSeeAll: currentSection)
     }
 }

@@ -54,7 +54,9 @@ private extension MainUITabBarController {
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = .black
 
+        tabBar.isTranslucent = false
         tabBar.standardAppearance = appearance
+        tabBar.scrollEdgeAppearance = appearance
     }
 
     func configureTabScenes() {

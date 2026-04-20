@@ -8,26 +8,6 @@
 import SnapKit
 import UIKit
 
-enum TMDBSession: CaseIterable {
-    case popular
-    case trending
-    case action
-    case upcoming
-
-    var sectionTitle: String {
-        switch self {
-        case .popular:
-            return "Popular on Netflix"
-        case .trending:
-            return "Trending Now"
-        case .action:
-            return "Action"
-        case .upcoming:
-            return "New Releases"
-        }
-    }
-}
-
 
 final class HomeView: BaseView {
     let topBarView = TopBarView()

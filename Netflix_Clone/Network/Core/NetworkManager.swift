@@ -8,11 +8,10 @@
 import Foundation
 import Alamofire
 
-// Sendable
-// 1. 보낼수있다.
-// -> 다른 쓰레드간 송수신시 데이터 레이스가 일어나지 않음을 개발자가 보장하겠습니다.
 final class NetworkManager: Sendable {
     
+    // T: 어떤 모델로 디코딩할 것인가
+    // R: 어떤 API 주소를 호출할 것인가
     func requestNetwork<T: Decodable, R: TargetType>(
         dto: T.Type,
         router: R
@@ -23,6 +22,7 @@ final class NetworkManager: Sendable {
     }
 }
 
+// MARK: Private
 private extension NetworkManager {
     
     func performRequest<T: Decodable>(

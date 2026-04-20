@@ -16,21 +16,22 @@ protocol TMDBServiceType: Sendable {
 }
 
 // MARK: INIT
-final class TMDBService: Sendable, TMDBServiceType {
-    private let routerManager: NetworkManager
+final class TMDBService: TMDBServiceType {
+    private let networkManager: NetworkManager
     private let tmdbMapper: TMDBMapperType
 
     init(
-        routerManager: NetworkManager = NetworkManager(),
+        networkManager: NetworkManager = NetworkManager(),
         tmdbMapper: TMDBMapperType = TMDBMapper()
     ) {
-        self.routerManager = routerManager
+        self.networkManager = networkManager
         self.tmdbMapper = tmdbMapper
     }
 }
 
-// MARK: Internal
+// MARK: Logic
 extension TMDBService {
+    
     func requestPopular() async throws(RouterError) -> [TMDBMovieEntity] {
         try await requestMovies(router: .popular)
     }
@@ -50,21 +51,7 @@ extension TMDBService {
     func requestSearch(searchText: String) async throws(RouterError) -> [TMDBMovieEntity] {
         try await requestMovies(router: .search(searchText: searchText))
     }
-}
-
-// MARK: private
-private extension TMDBService {
-    func requestMovies(router: TMDBRouter) async throws(RouterError) -> [TMDBMovieEntity] {
-        guard hasTMDBAPIKey else { throw .missingAPIKey }
-
-        let response = try await routerManager.requestNetwork(
-            dto: TMDBMovieListResponseDTO.self,
-            router: router
-        )
-
-        return tmdbMapper.map(response.results)
-    }
-
+    
     private var hasTMDBAPIKey: Bool {
         guard let value = Bundle.main.object(forInfoDictionaryKey: "TMDBAPIKey") as? String else {
             return false
@@ -72,5 +59,17 @@ private extension TMDBService {
 
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty == false && trimmed.contains("$(") == false
+    }
+
+    
+    func requestMovies(router: TMDBRouter) async throws(RouterError) -> [TMDBMovieEntity] {
+        guard hasTMDBAPIKey else { throw .missingAPIKey }
+
+        let response = try await networkManager.requestNetwork(
+            dto: MovieListResponseDTO.self,
+            router: router
+        )
+
+        return tmdbMapper.map(response.results)
     }
 }

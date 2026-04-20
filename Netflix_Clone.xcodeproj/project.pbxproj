@@ -16,7 +16,22 @@
 		04646E372F7DEC39001609E5 /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E362F7DEC39001609E5 /* RxSwift */; };
 		04646E382F7EF000001609E5 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E392F7EF000001609E5 /* Alamofire */; };
 		04646E3A2F7EF000001609E5 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E3B2F7EF000001609E5 /* RealmSwift */; };
+		04A105772F8F59E200AF1431 /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 04646E3B2F7EF000001609E5 /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		04A105782F8F59E200AF1431 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				04A105772F8F59E200AF1431 /* RealmSwift in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		0441B3B42F7D6147001B0FAB /* Netflix_Clone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Netflix_Clone.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -113,6 +128,7 @@
 				0441B3B02F7D6147001B0FAB /* Sources */,
 				0441B3B12F7D6147001B0FAB /* Frameworks */,
 				0441B3B22F7D6147001B0FAB /* Resources */,
+				04A105782F8F59E200AF1431 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -214,8 +230,11 @@
 				INFOPLIST_FILE = Netflix_Clone/App/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIStatusBarHidden = NO;
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -251,8 +270,11 @@
 				INFOPLIST_FILE = Netflix_Clone/App/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIStatusBarHidden = NO;
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

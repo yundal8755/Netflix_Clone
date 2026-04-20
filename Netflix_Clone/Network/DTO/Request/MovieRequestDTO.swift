@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct TMDBMovieRequestDTO: RequestDTO {
+struct MovieRequestDTO: RequestDTO {
     let apiKey: String
     let language: String
     let page: Int

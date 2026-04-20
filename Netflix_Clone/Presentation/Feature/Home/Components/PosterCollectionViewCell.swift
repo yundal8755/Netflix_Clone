@@ -11,75 +11,47 @@ import Alamofire
 import Kingfisher
 
 final class PosterCollectionViewCell: UICollectionViewCell {
-
-    // 레이아웃/디자인 수치를 한 곳에서 관리
     private enum Metric {
-        /// 포스터 카드 모서리 둥글기
         static let cornerRadius: CGFloat = 6
-        /// 하단 타이틀 오버레이 배경 높이
         static let titleBackgroundHeight: CGFloat = 44
-        /// 타이틀 텍스트 내부 여백
         static let titleInset: CGFloat = 8
-        /// 하트 버튼 크기
         static let heartButtonSize: CGFloat = 28
-        /// 하트 버튼 여백
         static let heartInset: CGFloat = 6
     }
 
     // 재사용 가능한 고정 리소스
     private enum Constant {
-        /// 네트워크 이미지가 없거나 실패했을 때 사용할 기본 이미지
         static let placeholderImage = UIImage(systemName: "photo")
     }
 
-    /// 이미지 URL 문자열 기준으로 캐싱해서 중복 다운로드를 줄입니다.
-    /// static으로 두면 셀 인스턴스가 달라도 동일 캐시를 공유합니다.
-    private static let imageCache = NSCache<NSString, UIImage>() // 감점 사유 셀 = 재사용셀 캐시를 지금 4개정도 각 섹션별로 따로 관리하고 있으셈 뿌직 -> Global 하게 관리하면 따봉추
-
-    /// 카드 전체 배경 컨테이너
+    private static let imageCache = NSCache<NSString, UIImage>()
     private let posterBackgroundView = UIView()
-    /// 포스터 이미지 본체
     private let posterImageView = UIImageView()
-    /// 하단 반투명 오버레이
     private let titleBackgroundView = UIView()
-    /// 영화 제목 라벨
     private let titleLabel = UILabel()
-    /// 좋아요 버튼
     private let heartButton = UIButton(type: .system)
-
-    /// 현재 진행 중인 이미지 요청 (재사용 시 취소하기 위해 참조 유지)
     private var imageRequest: DataRequest?
-    /// 셀이 "지금 보여줘야 하는 URL"을 추적하기 위한 값
-    /// 비동기 응답이 늦게 도착했을 때, 잘못된 셀에 이미지가 꽂히는 문제를 방지합니다.
     private var currentPosterURL: URL?
-    /// 현재 좋아요 상태
     private var isLiked = false
 
-    /// 하트 버튼 탭 이벤트 콜백
     var onTapHeartButton: (() -> Void)?
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    /// 셀이 재사용 풀로 돌아가기 직전 호출됩니다.
-    /// 이전 요청/데이터 상태를 정리하지 않으면 "이미지 섞임" 문제가 생길 수 있습니다.
     override func prepareForReuse() {
         super.prepareForReuse()
-        // 이전 네트워크 요청 취소
-        imageRequest?.cancel()
-        imageRequest = nil
-        // 현재 URL 추적값 초기화
+
         currentPosterURL = nil
         isLiked = false
         onTapHeartButton = nil
-        // UI를 기본 상태로 리셋
+
         posterImageView.image = Constant.placeholderImage
         titleLabel.text = nil
         applyHeartStyle(isLiked: false)
     }
     
-    /// 코드 기반 생성자
     override init(frame: CGRect) {
         super.init(frame: frame)
         configurationSetView()
@@ -90,7 +62,6 @@ final class PosterCollectionViewCell: UICollectionViewCell {
 
     // MARK: - Methods
 
-    /// 화면 트리에 서브뷰를 붙이는 단계
     private func configurationSetView() {
         contentView.addSubview(posterBackgroundView)
         posterBackgroundView.addSubview(posterImageView)
@@ -99,9 +70,6 @@ final class PosterCollectionViewCell: UICollectionViewCell {
         posterBackgroundView.addSubview(heartButton)
     }
 
-    /// 오토레이아웃 제약 설정
-    /// - 이미지는 카드 전체를 채우고
-    /// - 하단 오버레이 + 타이틀은 하단에 겹쳐 배치합니다.
     private func configurationLayout() {
         posterBackgroundView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -127,7 +95,6 @@ final class PosterCollectionViewCell: UICollectionViewCell {
         }
     }
 
-    /// 색상/폰트/접근성 등 스타일 구성
     private func configurationUI() {
         contentView.backgroundColor = .clear
 
@@ -159,11 +126,10 @@ final class PosterCollectionViewCell: UICollectionViewCell {
 }
 
 
-// MARK: - Business Logic
+// MARK: - Logic
 
 extension PosterCollectionViewCell {
-    /// 셀 외부에서 데이터를 주입하는 진입점
-    /// 텍스트를 먼저 반영하고, 이미지는 비동기로 로딩합니다.
+
     func configure(
         with item: PosterItem,
         isLiked: Bool = false,
@@ -177,13 +143,6 @@ extension PosterCollectionViewCell {
         loadPosterImage(from: item.posterURL)
     }
 
-    /// 포스터 이미지를 로딩합니다.
-    /// 처리 순서:
-    /// 1) 이전 요청 취소
-    /// 2) 현재 URL 추적값 저장
-    /// 3) 캐시 히트면 즉시 반영
-    /// 4) 캐시 미스면 네트워크 요청
-    /// 5) 응답 시 현재 URL과 일치하는지 확인 후 반영
     private func loadPosterImage(from url: URL?) {
         self.posterImageView.kf
             .setImage(

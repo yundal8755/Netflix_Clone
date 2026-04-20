@@ -7,11 +7,18 @@
 
 import UIKit
 
-/// Home Route Views
+struct SeeAllSheetPayload: Equatable {
+    let title: String
+    let items: [PosterItem]
+}
+
+protocol HomeCoordinatorDelegate: AnyObject {
+    func homeCoordinator(_ coordinator: HomeCoordinator, didRequestSeeAll payload: SeeAllSheetPayload)
+}
+
 enum HomeCoordinatorCase: Equatable, Hashable {
     
     case searchView
-    
     case example (userID: String)
 }
 
@@ -19,8 +26,10 @@ final class HomeCoordinator: Coordinator {
 
     var childCoordinators: [Coordinator] = []
     weak var navigationController: UINavigationController?
+    weak var delegate: HomeCoordinatorDelegate?
 
-    init() {
+    init(delegate: HomeCoordinatorDelegate? = nil) {
+        self.delegate = delegate
         let homeViewController = HomeViewController()
         let tabNavigationController = UINavigationController(rootViewController: homeViewController)
 
@@ -41,24 +50,21 @@ final class HomeCoordinator: Coordinator {
             break
         }
     }
-}
 
-// MARK: -- Private --
+    func showSeeAll(for section: HomeViewModel.Section) {
+        let payload = SeeAllSheetPayload(title: section.title, items: section.items)
+        delegate?.homeCoordinator(self, didRequestSeeAll: payload)
+    }
+}
 
 // MARK: Route
 extension HomeCoordinator {
     private func showSearch() {
-        let viewController = AViewController()
-        viewController.view.backgroundColor = .red
-        viewController.title = "검색"
+        let viewController = SearchViewController()
+        viewController.view.backgroundColor = .black
         viewController.hidesBottomBarWhenPushed = true
 
-        navigationController?.setNavigationBarHidden(false, animated: false)
+        navigationController?.setNavigationBarHidden(true, animated: false)
         navigationController?.pushViewController(viewController, animated: true)
-//        next(viewController: viewController)
     }
-}
-
-final class AViewController: BaseViewController<UIView> {
-    
 }
