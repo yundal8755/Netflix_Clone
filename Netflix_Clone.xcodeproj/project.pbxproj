@@ -17,6 +17,8 @@
 		04646E382F7EF000001609E5 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E392F7EF000001609E5 /* Alamofire */; };
 		04646E3A2F7EF000001609E5 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 04646E3B2F7EF000001609E5 /* RealmSwift */; };
 		04A105772F8F59E200AF1431 /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 04646E3B2F7EF000001609E5 /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		04EFCA302F97547C00CD20AB /* ReactorKit in Frameworks */ = {isa = PBXBuildFile; productRef = 04EFCA2F2F97547C00CD20AB /* ReactorKit */; };
+		04EFCA332F97552400CD20AB /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = 04EFCA322F97552400CD20AB /* Then */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -70,12 +72,14 @@
 			files = (
 				04646E382F7EF000001609E5 /* Alamofire in Frameworks */,
 				04646E332F7DEC2D001609E5 /* RxCocoa in Frameworks */,
+				04EFCA332F97552400CD20AB /* Then in Frameworks */,
 				04646E2F2F7DEBFF001609E5 /* NSObject-Rx in Frameworks */,
 				04646E3A2F7EF000001609E5 /* RealmSwift in Frameworks */,
 				043A3AC72F88E15A00FDDA24 /* Kingfisher in Frameworks */,
 				04646E372F7DEC39001609E5 /* RxSwift in Frameworks */,
 				04646E352F7DEC39001609E5 /* RxRelay in Frameworks */,
 				04646E2A2F7DEBE6001609E5 /* SnapKit in Frameworks */,
+				04EFCA302F97547C00CD20AB /* ReactorKit in Frameworks */,
 				043A3AD42F88E89E00FDDA24 /* SwiftyBeaver in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -148,6 +152,8 @@
 				04646E362F7DEC39001609E5 /* RxSwift */,
 				043A3AC62F88E15A00FDDA24 /* Kingfisher */,
 				043A3AD32F88E89E00FDDA24 /* SwiftyBeaver */,
+				04EFCA2F2F97547C00CD20AB /* ReactorKit */,
+				04EFCA322F97552400CD20AB /* Then */,
 			);
 			productName = Netflix_Clone;
 			productReference = 0441B3B42F7D6147001B0FAB /* Netflix_Clone.app */;
@@ -185,6 +191,8 @@
 				04646E302F7DEC15001609E5 /* XCRemoteSwiftPackageReference "RxSwift" */,
 				043A3AC52F88E15A00FDDA24 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				043A3AD22F88E89E00FDDA24 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */,
+				04EFCA2E2F97547C00CD20AB /* XCRemoteSwiftPackageReference "ReactorKit" */,
+				04EFCA312F97552400CD20AB /* XCRemoteSwiftPackageReference "Then" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0441B3B52F7D6147001B0FAB /* Products */;
@@ -498,6 +506,22 @@
 				minimumVersion = 10.0.0;
 			};
 		};
+		04EFCA2E2F97547C00CD20AB /* XCRemoteSwiftPackageReference "ReactorKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ReactorKit/ReactorKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.2.0;
+			};
+		};
+		04EFCA312F97552400CD20AB /* XCRemoteSwiftPackageReference "Then" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/devxoul/Then.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -545,6 +569,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 04646E3D2F7EF000001609E5 /* XCRemoteSwiftPackageReference "realm-swift" */;
 			productName = RealmSwift;
+		};
+		04EFCA2F2F97547C00CD20AB /* ReactorKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04EFCA2E2F97547C00CD20AB /* XCRemoteSwiftPackageReference "ReactorKit" */;
+			productName = ReactorKit;
+		};
+		04EFCA322F97552400CD20AB /* Then */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04EFCA312F97552400CD20AB /* XCRemoteSwiftPackageReference "Then" */;
+			productName = Then;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

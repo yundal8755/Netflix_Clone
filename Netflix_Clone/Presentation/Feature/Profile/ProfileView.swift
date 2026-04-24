@@ -16,8 +16,15 @@ final class ProfileView: BaseView {
         label.font = .systemFont(ofSize: 30, weight: .bold)
         return label
     } ()
-    
-    let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewLayout())
+        
+    let collectionView: UICollectionView = {
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewLayout())
+        cv.backgroundColor = .black
+        cv.keyboardDismissMode = .onDrag
+        cv.alwaysBounceVertical = true
+        cv.showsVerticalScrollIndicator = false
+        return cv
+    }()
 
     override func configurationSetView() {
         addSubview(titleLabel)
@@ -38,11 +45,6 @@ final class ProfileView: BaseView {
 
     override func configurationUI() {
         backgroundColor = .black
-
-        collectionView.backgroundColor = .black
-        collectionView.keyboardDismissMode = .onDrag
-        collectionView.alwaysBounceVertical = true
-        collectionView.showsVerticalScrollIndicator = false
     }
 }
 

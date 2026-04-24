@@ -8,9 +8,9 @@
 import UIKit
 import PhotosUI
 import RxCocoa
-import RxRelay
 import RxSwift
 import NSObject_Rx
+import ReactorKit
 
 private enum ProfileCollectionSection: Int, CaseIterable {
     case profileInfo
@@ -23,23 +23,16 @@ final class ProfileViewController: BaseViewController<ProfileView> {
 
     private typealias DataSource = UICollectionViewDiffableDataSource<Int, String>
 
-    private let viewModel: ProfileViewModel
+    private let reactor = ProfileReactor()
 
     private var dataSource: DataSource?
-    private var currentViewState: ProfileViewModel.ViewState?
-
-    private let nicknameChangedRelay = PublishRelay<String>()
-    private let statusMessageChangedRelay = PublishRelay<String>()
-    private let saveButtonTappedRelay = PublishRelay<Void>()
-    private let profileImagePickedRelay = PublishRelay<Data>()
+    private var currentState: ProfileReactor.State?
 
     var onDismiss: (() -> Void)?
 
     init(
-        viewModel: ProfileViewModel = ProfileViewModel(),
         onDismiss: (() -> Void)? = nil
     ) {
-        self.viewModel = viewModel
         self.onDismiss = onDismiss
         super.init(nibName: nil, bundle: nil)
     }
@@ -59,7 +52,7 @@ final class ProfileViewController: BaseViewController<ProfileView> {
         setupDataSource()
         setupBindings()
 
-        viewModel.send(action: .viewDidLoad)
+        reactor.action.onNext(.viewDidLoad)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -96,7 +89,7 @@ private extension ProfileViewController {
                 return UICollectionViewCell()
             }
 
-            if let state = self.currentViewState {
+            if let state = self.currentState {
                 cell.configure(
                     nickname: state.nickname,
                     statusMessage: state.statusMessage,
@@ -110,15 +103,15 @@ private extension ProfileViewController {
             }
 
             cell.onNicknameChanged = { [weak self] nickname in
-                self?.nicknameChangedRelay.accept(nickname)
+                self?.reactor.action.onNext(.nicknameChanged(nickname))
             }
 
             cell.onStatusMessageChanged = { [weak self] statusMessage in
-                self?.statusMessageChangedRelay.accept(statusMessage)
+                self?.reactor.action.onNext(.statusMessageChanged(statusMessage))
             }
 
             cell.onTapSaveButton = { [weak self] in
-                self?.saveButtonTappedRelay.accept(())
+                self?.reactor.action.onNext(.saveButtonTapped)
             }
 
             return cell
@@ -138,59 +131,28 @@ private extension ProfileViewController {
             }
             .disposed(by: rx.disposeBag)
 
-        nicknameChangedRelay
-            .distinctUntilChanged()
-            .bind(with: self) { owner, nickname in
-                owner.viewModel.send(action: .nicknameChanged(nickname))
-            }
-            .disposed(by: rx.disposeBag)
-
-        statusMessageChangedRelay
-            .distinctUntilChanged()
-            .bind(with: self) { owner, statusMessage in
-                owner.viewModel.send(action: .statusMessageChanged(statusMessage))
-            }
-            .disposed(by: rx.disposeBag)
-
-        saveButtonTappedRelay
-            .bind(with: self) { owner, _ in
-                owner.viewModel.send(action: .saveButtonTapped)
-            }
-            .disposed(by: rx.disposeBag)
-
-        profileImagePickedRelay
-            .bind(with: self) { owner, imageData in
-                owner.viewModel.send(action: .profileImagePicked(imageData))
-            }
-            .disposed(by: rx.disposeBag)
     }
 
     func bindOutput() {
-        viewModel.output.viewState
+        reactor.state
             .observe(on: MainScheduler.instance)
             .subscribe(with: self) { owner, state in
                 owner.render(state: state)
             }
             .disposed(by: rx.disposeBag)
 
-        viewModel.output.saveCompleted
+        reactor.pulse(\.$showAlertText)
+            .compactMap { $0 }
             .observe(on: MainScheduler.instance)
             .subscribe(with: self) { owner, message in
                 owner.view.endEditing(true)
                 owner.presentMessageAlert(message: message)
             }
             .disposed(by: rx.disposeBag)
-
-        viewModel.output.errorMessage
-            .observe(on: MainScheduler.instance)
-            .subscribe(with: self) { owner, message in
-                owner.presentMessageAlert(message: message)
-            }
-            .disposed(by: rx.disposeBag)
     }
 
-    func render(state: ProfileViewModel.ViewState) {
-        currentViewState = state
+    func render(state: ProfileReactor.State) {
+        currentState = state
         applySnapshot()
     }
 
@@ -289,7 +251,7 @@ extension ProfileViewController: PHPickerViewControllerDelegate {
             guard let imageData else { return }
 
             DispatchQueue.main.async {
-                self.profileImagePickedRelay.accept(imageData)
+                self.reactor.action.onNext(.profileImagePicked(imageData))
             }
         }
     }

@@ -9,6 +9,7 @@ import UIKit
 import RxSwift
 import RxCocoa
 import SnapKit
+import Then
 
 enum SearchTopViewAction: Equatable {
     case textChanged(String)
@@ -24,25 +25,22 @@ final class SearchTopView: BaseView {
         static let iconFrameWidth: Int = 36
         static let iconWidth: Int = 24
     }
-
-    private let backBtn: UIButton = {
-        let btn = UIButton(type: .system)
-        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
-        btn.setImage(UIImage(systemName: "chevron.left", withConfiguration: config), for: .normal)
-        btn.tintColor = .white
-
-        return btn
-    }()
     
-    private let textfield: UITextField = {
-        let tf = UITextField()
-        tf.backgroundColor = UIColor(white: 1, alpha: 0.15)
-        tf.layer.cornerRadius = 12
-        tf.textColor = .white
-        tf.tintColor = .white
-        tf.clearButtonMode = .whileEditing
-        tf.returnKeyType = .search
-        tf.attributedPlaceholder = NSAttributedString(
+    private let backBtn = UIButton(type: .system).then {
+        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
+        let image = UIImage(systemName: "chevron.left", withConfiguration: config)
+        $0.setImage(image, for: .normal)
+        $0.tintColor = .white
+    }
+    
+    private let textfield = UITextField().then {
+        $0.backgroundColor = UIColor(white: 1, alpha: 0.15)
+        $0.layer.cornerRadius = 12
+        $0.textColor = .white
+        $0.tintColor = .white
+        $0.clearButtonMode = .whileEditing
+        $0.returnKeyType = .search
+        $0.attributedPlaceholder = NSAttributedString(
             string: "시리즈, 영화, 게임을 검색해 보세요...",
             attributes: [.foregroundColor: UIColor(white: 1, alpha: 0.75)]
         )
@@ -68,11 +66,9 @@ final class SearchTopView: BaseView {
         iconView.center.y = leftViewContainer.bounds.midY
         leftViewContainer.addSubview(iconView)
 
-        tf.leftView = leftViewContainer
-        tf.leftViewMode = .always
-        
-        return tf
-    }()
+        $0.leftView = leftViewContainer
+        $0.leftViewMode = .always
+    }
     
     // MARK: - Base
     

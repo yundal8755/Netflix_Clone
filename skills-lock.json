@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "swiftui-expert-skill": {
+      "source": "avdlee/swiftui-agent-skill",
+      "sourceType": "github",
+      "computedHash": "cc254d18562b0666f4c85561b92b21eb1878e346b659f8b6d80c02a166725cb4"
+    },
+    "uikit-expert": {
+      "source": "ivan-magda/uikit-expert-skill",
+      "sourceType": "github",
+      "computedHash": "228e5b8aa192cd62d894414bc3dbb17c4c4c0303931acda6f335585d63bca20d"
+    }
+  }
+}

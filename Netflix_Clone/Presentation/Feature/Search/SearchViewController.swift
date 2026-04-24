@@ -10,13 +10,13 @@ import RxSwift
 import RxCocoa
 
 final class SearchViewController: BaseViewController<SearchView> {
-    private let container = SearchContainer()
+    private let store = Store(SearchContainer())
     private let disposeBag = DisposeBag()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         bindState()
-        bindInput()
+        bindIntent()
     }
 }
 
@@ -24,27 +24,27 @@ final class SearchViewController: BaseViewController<SearchView> {
 
 extension SearchViewController {
     
-    // 상태를 구독하겠다
-    // State, Effect
+    // 결과를 내보내는 것 (뷰의 상태)
     private func bindState() {
-        container.stateObservable
+        store.stateObservable
             .map{ $0.searchViewMode }
             .distinctUntilChanged()
             .bind(with: self) { owner, mode in
                 owner.mainView.searchViewMode = mode
             }
             .disposed(by: disposeBag)
-        
-        container.stateObservable
+
+        store.stateObservable
             .map{ $0.recommendedMovies }
             .distinctUntilChanged()
             .bind(with: self) { owner, datas in
                 owner.mainView.applyRecommendedItems(datas)
             }
             .disposed(by: disposeBag)
-        
-        container.stateObservable
-            .compactMap { $0.effect } // ReactorKit @Pulse 라는 개념이 있답니다.
+
+        store.stateObservable
+            // ReactorKit @Pulse 라는 개념이 있답니다.
+            .compactMap { $0.effect }
             .bind(with: self) { owner, effect in
                 switch effect {
                 case .clickContent:
@@ -57,19 +57,20 @@ extension SearchViewController {
             }
             .disposed(by: disposeBag)
     }
-    
-    // input을 구독하겠다
-    private func bindInput() {
-        container.send(.viewDidLoad)
-        
+
+    // 뷰의 액션만 모아둠
+    private func bindIntent() {
+        store.send(.viewDidLoad)
+
+        // 검색창 뷰 액션
         mainView.searchTopView.viewAction
             .bind(with: self) { owner, action in
                 switch action {
                 case .textChanged(let text):
-                    owner.container.send(.inputText(text))
-                    
+                    owner.store.send(.inputText(text))
+
                 case .backButtonTapped:
-                    owner.container.send(.backButtonTapped)
+                    owner.store.send(.backButtonTapped)
                 }
             }
             .disposed(by: disposeBag)

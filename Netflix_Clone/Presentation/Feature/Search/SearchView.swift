@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 
 final class SearchView: BaseView {
-    var searchViewMode: SearchViewMode = .beforeSearch {
+    var searchViewMode: SearchContainer.SearchViewMode = .beforeSearch {
         didSet {
             guard oldValue != searchViewMode else { return }
             renderContent()

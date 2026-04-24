@@ -7,14 +7,7 @@
 
 import Foundation
 import RealmSwift
-
-extension Notification.Name {
-    static let profileDidUpdate = Notification.Name("profileDidUpdate")
-}
-
-enum ProfileNotificationUserInfoKey {
-    static let profileImageName = "profileImageName"
-}
+import RxSwift
 
 struct ProfileEntity {
     let nickname: String
@@ -41,6 +34,14 @@ protocol ProfileRepositoryType: Sendable {
 
 actor ProfileRepository: ProfileRepositoryType {
     private let configuration: Realm.Configuration
+    
+    static let shared = ProfileRepository()
+    
+    private init () {
+        self.configuration = .defaultConfiguration
+    }
+    
+    let updateEvent = PublishSubject<Void>()
 
     init(configuration: Realm.Configuration = .defaultConfiguration) {
         self.configuration = configuration
@@ -90,13 +91,8 @@ actor ProfileRepository: ProfileRepositoryType {
                 profileImageName: profileImageName,
                 statusMessage: statusMessage
             )
-
-            NotificationCenter.default.post(
-                name: .profileDidUpdate,
-                object: nil,
-                userInfo: [ProfileNotificationUserInfoKey.profileImageName: profileImageName]
-            )
-
+            
+            updateEvent.onNext(())
             return entity
         }
     }

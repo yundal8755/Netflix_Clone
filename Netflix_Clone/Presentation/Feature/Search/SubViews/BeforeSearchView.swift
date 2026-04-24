@@ -1,5 +1,6 @@
 import UIKit
 import SnapKit
+import Then
 
 final class BeforeSearchView: BaseView {
     private typealias SectionID = Int
@@ -10,17 +11,15 @@ final class BeforeSearchView: BaseView {
     private let mainSection = 0
     private var itemsByID: [ItemID: ListTileContent] = [:]
 
-    private lazy var collectionView: UICollectionView = {
-        let cv = UICollectionView(frame: .zero, collectionViewLayout: makeLayout())
-        cv.backgroundColor = .clear
-        cv.showsVerticalScrollIndicator = false
-        cv.alwaysBounceVertical = true
-        cv.register(
+    private let collectionView = UICollectionView(frame: .zero, collectionViewLayout: BeforeSearchView.makeLayout()).then {
+        $0.backgroundColor = .clear
+        $0.showsVerticalScrollIndicator = false
+        $0.alwaysBounceVertical = true
+        $0.register(
             ListTileCollectionViewCell.self,
             forCellWithReuseIdentifier: ListTileCollectionViewCell.cellID
         )
-        return cv
-    }()
+    }
 
     private lazy var dataSource: DataSource = {
         DataSource(collectionView: collectionView) { [weak self] collectionView, indexPath, itemID in
@@ -32,7 +31,7 @@ final class BeforeSearchView: BaseView {
                   let item = self.itemsByID[itemID] else {
                 return UICollectionViewCell()
             }
-
+            
             cell.configure(with: item)
             return cell
         }
@@ -65,12 +64,12 @@ extension BeforeSearchView {
 
         var snapshot = Snapshot()
         snapshot.appendSections([mainSection])
-        snapshot.appendItems(items.map(\.id), toSection: mainSection)
+        snapshot.appendItems(items.map(\.id),toSection: mainSection)
 
         dataSource.apply(snapshot, animatingDifferences: animated)
     }
     
-    func makeLayout() -> UICollectionViewLayout {
+    static func makeLayout() -> UICollectionViewLayout {
         var config = UICollectionLayoutListConfiguration(appearance: .plain)
         config.showsSeparators = false
         config.backgroundColor = .clear
